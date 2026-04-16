@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Rifa</title>
+</head>
+<body>
+
+<h1>Rifa</h1>
+
+<button onclick="comprar()">Comprar número</button>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBoCNV94pAyGK7bhNE5rVjqOPI40JB4sXQ",
+  authDomain: "rifa-6dd5b.firebaseapp.com",
+  databaseURL: "https://rifa-6dd5b-default-rtdb.firebaseio.com",
+  projectId: "rifa-6dd5b",
+  storageBucket: "rifa-6dd5b.firebasestorage.app",
+  messagingSenderId: "294439891580",
+  appId: "1:294439891580:web:b7d502f1be0631033b8ff9"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+function comprar() {
+  const numero = Math.floor(Math.random() * 1000);
+
+  db.ref("rifa/" + numero).set({
+    comprado: true
+  });
+
+  alert("Compraste el número: " + numero);
+
+  window.open("https://wa.me/593987838871");
+}
+</script>
+
+</body>
+</html>
