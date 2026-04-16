@@ -1,13 +1,51 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Rifa</title>
+  <title>Rifa Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      background: #0f172a;
+      color: white;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 8px;
+      padding: 20px;
+    }
+
+    .num {
+      padding: 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .libre {
+      background: #22c55e;
+    }
+
+    .ocupado {
+      background: #ef4444;
+      cursor: not-allowed;
+    }
+  </style>
 </head>
 <body>
 
-<h1>Rifa</h1>
+<h1>🎟️ RIFA PRO</h1>
+<p>Selecciona tu número</p>
 
-<button onclick="comprar()">Comprar número</button>
+<div class="grid" id="grid"></div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -26,16 +64,43 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-function comprar() {
-  const numero = Math.floor(Math.random() * 1000);
+const grid = document.getElementById("grid");
 
-  db.ref("rifa/" + numero).set({
-    comprado: true
+// Crear números
+for (let i = 0; i < 100; i++) {
+  const div = document.createElement("div");
+  div.classList.add("num", "libre");
+  div.innerText = i;
+
+  div.onclick = () => comprar(i);
+
+  grid.appendChild(div);
+}
+
+// Escuchar Firebase
+db.ref("rifa").on("value", snapshot => {
+  const data = snapshot.val() || {};
+
+  document.querySelectorAll(".num").forEach(div => {
+    const num = div.innerText;
+
+    if (data[num]) {
+      div.classList.remove("libre");
+      div.classList.add("ocupado");
+    }
   });
+});
 
-  alert("Compraste el número: " + numero);
+// Comprar
+function comprar(numero) {
+  if (confirm("¿Comprar número " + numero + "?")) {
 
-  window.open("https://wa.me/593987838871");
+    db.ref("rifa/" + numero).set({
+      comprado: true
+    });
+
+    window.open("https://wa.me/593987838871"); // CAMBIA TU NUMERO
+  }
 }
 </script>
 
