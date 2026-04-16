@@ -1,21 +1,16 @@
-```html
+```html id="c9o1p4"
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Rifa Pro</title>
+  <title>Rifa Profesional</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
     body {
       font-family: Arial;
-      text-align: center;
       background: #0f172a;
       color: white;
-      margin: 0;
-    }
-
-    h1 {
-      margin-top: 20px;
+      text-align: center;
     }
 
     .grid {
@@ -26,33 +21,71 @@
     }
 
     .num {
-      padding: 15px;
+      padding: 12px;
       border-radius: 8px;
       cursor: pointer;
       font-weight: bold;
-      transition: 0.2s;
     }
 
-    .num:hover {
-      transform: scale(1.05);
+    .libre { background: #22c55e; }
+    .ocupado { background: #ef4444; cursor: not-allowed; }
+
+    .box {
+      background: #1e293b;
+      padding: 15px;
+      margin: 10px;
+      border-radius: 10px;
     }
 
-    .libre {
+    input {
+      padding: 8px;
+      margin: 5px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    button {
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
       background: #22c55e;
+      cursor: pointer;
+      font-weight: bold;
     }
 
-    .ocupado {
-      background: #ef4444;
-      cursor: not-allowed;
+    .admin {
+      display: none;
+      background: black;
+      padding: 10px;
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
     }
   </style>
 </head>
 <body>
 
-<h1>🎟️ RIFA PRO</h1>
-<p>Selecciona tu número</p>
+<h1>🎟️ RIFA PROFESIONAL</h1>
 
-<div class="grid" id="grid"></div>
+<div class="box">
+  Vendidos: <span id="vendidos">0</span>
+</div>
+
+<div id="grid" class="grid"></div>
+
+<div class="box">
+  <h3>📌 Instrucciones de Pago</h3>
+  <p>Transferir a:</p>
+  <p><b>Banco Pichincha</b></p>
+  <p>Cuenta: 1234567890</p>
+  <p>Nombre: TU NOMBRE</p>
+  <p>Luego envía comprobante por WhatsApp</p>
+</div>
+
+<div class="admin" id="admin">
+  <button onclick="verClientes()">📋 Ver Clientes</button>
+  <button onclick="reset()">🔄 Reset</button>
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -63,9 +96,6 @@ const firebaseConfig = {
   authDomain: "rifa-6dd5b.firebaseapp.com",
   databaseURL: "https://rifa-6dd5b-default-rtdb.firebaseio.com",
   projectId: "rifa-6dd5b",
-  storageBucket: "rifa-6dd5b.firebasestorage.app",
-  messagingSenderId: "294439891580",
-  appId: "1:294439891580:web:b7d502f1be0631033b8ff9"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -73,40 +103,76 @@ const db = firebase.database();
 
 const grid = document.getElementById("grid");
 
-// Crear números
+// crear números
 for (let i = 0; i < 100; i++) {
   const div = document.createElement("div");
   div.classList.add("num", "libre");
   div.innerText = i;
 
-  div.onclick = () => comprar(i);
+  div.onclick = () => seleccionar(i);
 
   grid.appendChild(div);
 }
 
-// Escuchar Firebase
-db.ref("rifa").on("value", snapshot => {
-  const data = snapshot.val() || {};
+// escuchar cambios
+db.ref("rifa").on("value", snap => {
+  const data = snap.val() || {};
+  let count = 0;
 
   document.querySelectorAll(".num").forEach(div => {
-    const num = div.innerText;
+    const n = div.innerText;
 
-    if (data[num]) {
+    if (data[n]) {
       div.classList.remove("libre");
       div.classList.add("ocupado");
+      count++;
     }
   });
+
+  document.getElementById("vendidos").innerText = count;
 });
 
-// Comprar
-function comprar(numero) {
-  if (confirm("¿Comprar número " + numero + "?")) {
+// seleccionar número
+function seleccionar(num) {
+  const nombre = prompt("Ingresa tu nombre:");
+  const telefono = prompt("Ingresa tu teléfono:");
 
-    db.ref("rifa/" + numero).set({
-      comprado: true
-    });
+  if (!nombre || !telefono) return;
 
-    window.open("https://wa.me/593987838871"); // CAMBIA TU NUMERO
+  db.ref("rifa/" + num).set({
+    nombre,
+    telefono,
+    estado: "pendiente"
+  });
+
+  const msg = encodeURIComponent(
+    "Hola, soy " + nombre +
+    ". Reservé el número " + num +
+    ". Envío comprobante."
+  );
+
+  window.open("https://wa.me/593XXXXXXXXX?text=" + msg);
+}
+
+// admin secreto
+document.addEventListener("keydown", e => {
+  if (e.key === "a") {
+    document.getElementById("admin").style.display = "block";
+  }
+});
+
+// ver clientes
+function verClientes() {
+  db.ref("rifa").once("value", snap => {
+    console.log(snap.val());
+    alert("Revisa la consola (F12)");
+  });
+}
+
+// reset
+function reset() {
+  if (confirm("Borrar todo?")) {
+    db.ref("rifa").remove();
   }
 }
 </script>
