@@ -1,4 +1,4 @@
-```html id="profinal1"
+```html id="responsivepro1"
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,33 +7,47 @@
 
   <style>
     body {
-      font-family: Arial;
+      font-family: 'Segoe UI', Arial;
       background: #0f172a;
       color: white;
-      text-align: center;
+      margin: 0;
     }
 
-    h1 { margin: 10px; }
+    header {
+      padding: 15px;
+      text-align: center;
+      background: #020617;
+      font-size: 20px;
+      font-weight: bold;
+    }
 
-    .box {
-      background: #1e293b;
+    .container {
+      max-width: 1000px;
+      margin: auto;
       padding: 10px;
-      margin: 10px;
-      border-radius: 10px;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
       gap: 10px;
-      padding: 20px;
     }
 
     .num {
       padding: 15px;
       border-radius: 10px;
       font-weight: bold;
+      text-align: center;
       cursor: pointer;
+      font-size: 14px;
     }
 
     .libre { background: #22c55e; }
@@ -42,48 +56,91 @@
 
     input {
       padding: 10px;
-      border-radius: 6px;
+      border-radius: 8px;
       border: none;
-      width: 150px;
+      width: 100%;
+      margin-top: 5px;
+      font-size: 16px;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     button {
-      padding: 10px;
-      border-radius: 6px;
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
       border: none;
-      cursor: pointer;
       font-weight: bold;
-      margin: 5px;
+      cursor: pointer;
+      background: #22c55e;
+      color: black;
+      font-size: 14px;
+    }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav button {
+      flex: unset;
+      width: 100px;
+    }
+
+    @media (max-width: 600px) {
+      .num {
+        padding: 12px;
+        font-size: 12px;
+      }
+
+      button {
+        font-size: 13px;
+        padding: 10px;
+      }
     }
   </style>
 </head>
 <body>
 
-<h1>🎟️ RIFA PROFESIONAL</h1>
+<header>🎟️ RIFA PROFESIONAL</header>
 
-<div class="box">
-  🥇 PlayStation 5 <br>
-  🥈 Computadora Core i7 1TB
+<div class="container">
+
+  <div class="card">
+    🥇 PlayStation 5 <br>
+    🥈 Computadora Core i7 1TB
+  </div>
+
+  <div class="card">
+    💰 $5 por número  
+    <br>
+    Vendidos: <span id="vendidos">0</span>
+  </div>
+
+  <div class="card">
+    🔍 Buscar número
+    <input type="number" id="buscar" placeholder="Ej: 25">
+
+    <div class="row">
+      <button onclick="buscarNum()">Buscar</button>
+      <button onclick="aleatorio()">🎲 Aleatorio</button>
+    </div>
+  </div>
+
+  <div class="card nav">
+    <button onclick="prev()">⬅</button>
+    <span id="pagina"></span>
+    <button onclick="next()">➡</button>
+  </div>
+
+  <div id="grid" class="grid"></div>
+
 </div>
-
-<div class="box">
-  💰 Valor: $5 | Vendidos: <span id="vendidos">0</span>
-</div>
-
-<div class="box">
-  🔍 Buscar número:
-  <input type="number" id="buscar">
-  <button onclick="buscarNum()">Buscar</button>
-  <button onclick="aleatorio()">🎲 Aleatorio</button>
-</div>
-
-<div>
-  <button onclick="prev()">⬅</button>
-  <span id="pagina"></span>
-  <button onclick="next()">➡</button>
-</div>
-
-<div id="grid" class="grid"></div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -105,14 +162,15 @@ const total = 2000;
 
 const grid = document.getElementById("grid");
 
-// cargar página
+// cargar
 function cargarPagina() {
   grid.innerHTML = "";
 
   let inicio = (paginaActual - 1) * porPagina + 1;
   let fin = inicio + porPagina - 1;
 
-  document.getElementById("pagina").innerText = "Página " + paginaActual;
+  document.getElementById("pagina").innerText =
+    "Página " + paginaActual;
 
   for (let i = inicio; i <= fin; i++) {
     const div = document.createElement("div");
@@ -127,7 +185,7 @@ function cargarPagina() {
   actualizarEstados();
 }
 
-// actualizar estados
+// estados
 function actualizarEstados() {
   db.ref("rifa").once("value", snap => {
     const data = snap.val() || {};
@@ -151,7 +209,7 @@ function actualizarEstados() {
   });
 }
 
-// buscar número
+// buscar
 function buscarNum() {
   const n = document.getElementById("buscar").value;
 
@@ -172,14 +230,14 @@ function buscarNum() {
   }, 300);
 }
 
-// número aleatorio
+// aleatorio
 function aleatorio() {
   const n = Math.floor(Math.random() * total) + 1;
   document.getElementById("buscar").value = n;
   buscarNum();
 }
 
-// navegación
+// nav
 function next() {
   if (paginaActual < total / porPagina) {
     paginaActual++;
@@ -194,7 +252,7 @@ function prev() {
   }
 }
 
-// seleccionar
+// comprar
 function seleccionar(num) {
   const nombre = prompt("Nombre:");
   const telefono = prompt("Teléfono:");
