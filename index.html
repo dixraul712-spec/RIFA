@@ -1,279 +1,275 @@
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rifa Premium</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+
 <style>
 body{
-font-family:Arial;
-background:#0f172a;
-color:white;
-margin:0;
-text-align:center;
+  font-family:'Poppins',sans-serif;
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  color:white;
+  margin:0;
 }
 
-.container{
-padding:15px;
-max-width:900px;
-margin:auto;
+/* HEADER */
+header{
+  background:rgba(34,197,94,0.9);
+  backdrop-filter:blur(10px);
+  padding:15px;
+  text-align:center;
+  font-weight:700;
+  font-size:18px;
+  position:sticky;
+  top:0;
 }
 
-h1{
-font-size:22px;
+/* CONTAINER */
+.container{padding:15px;max-width:1000px;margin:auto}
+
+/* CARD */
+.card{
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(10px);
+  border-radius:15px;
+  padding:15px;
+  margin-bottom:15px;
+  box-shadow:0 8px 25px rgba(0,0,0,0.3);
 }
 
-.premios{
-background:linear-gradient(135deg,#22c55e,#16a34a);
-padding:15px;
-border-radius:12px;
-color:black;
-font-weight:bold;
-margin:15px 0;
-}
-
+/* GRID NUMEROS */
 .grid{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(55px,1fr));
-gap:6px;
-max-height:300px;
-overflow:auto;
-padding:5px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(70px,1fr));
+  gap:10px;
 }
 
 .num{
-padding:8px;
-background:#1e293b;
-border-radius:8px;
-cursor:pointer;
-font-size:12px;
+  padding:12px;
+  border-radius:12px;
+  text-align:center;
+  cursor:pointer;
+  font-weight:bold;
+  transition:0.3s;
 }
 
-.selected{
-background:#22c55e;
-color:black;
+.libre{background:#22c55e}
+.pendiente{background:#f59e0b}
+.pagado{background:#ef4444}
+.seleccionado{
+  transform:scale(1.1);
+  box-shadow:0 0 10px yellow;
 }
 
+/* BOTONES */
 button{
-margin-top:10px;
-padding:12px;
-border:none;
-border-radius:10px;
-background:#22c55e;
-font-weight:bold;
-cursor:pointer;
-width:100%;
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  color:white;
+  font-weight:bold;
+  margin-top:10px;
+  cursor:pointer;
+  transition:0.3s;
 }
-
-.qr{
-display:none;
-margin-top:15px;
-}
+button:hover{transform:scale(1.05)}
 
 input{
-width:100%;
-padding:10px;
-margin-top:10px;
-border-radius:8px;
-border:none;
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:none;
+  margin-top:5px;
 }
 
+/* QR */
+.qr{
+  text-align:center;
+}
+.qr img{
+  width:180px;
+  border-radius:10px;
+  background:white;
+  padding:10px;
+}
+
+/* ADMIN */
 .admin{
-display:none;
-margin-top:20px;
-background:#111;
-padding:10px;
-border-radius:10px;
+  display:none;
+  position:fixed;
+  bottom:0;
+  width:100%;
+  background:#000;
+  max-height:80vh;
+  overflow:auto;
 }
 
-table{
-width:100%;
-font-size:12px;
-}
+table{width:100%;font-size:12px}
 
-td,th{
-padding:5px;
-border-bottom:1px solid #333;
-}
+/* TEXTO */
+h2{margin:5px 0}
+.total{font-size:16px;font-weight:bold}
 </style>
 </head>
 
 <body>
 
+<header>🎟️ RIFA SOLIDARIA HOY POR MI MAÑANA POR TI </header>
+
 <div class="container">
 
-<h1>🎟 Rifa Premium</h1>
-
-<div class="premios">
-🎁 PREMIOS OFICIALES<br><br>
-🥇 PlayStation 5 🎮<br>
-🥈 CPU NUC completa 💻<br>
-🥉 $200 en efectivo 💵
+<div class="card">
+<h2>🎮 PlayStation 5</h2>
+<p>$5 por número</p>
+<p>Vendidos: <b id="vendidos">0</b></p>
 </div>
 
-<input id="nombre" placeholder="Tu nombre">
-<input id="tel" placeholder="Tu WhatsApp">
+<div class="card">
+<div id="totalBox" class="total">Seleccionados: 0 | Total: $0</div>
+<button onclick="comprar()">💳 Comprar ahora</button>
 
-<p>Selecciona tus números:</p>
-
-<div class="grid" id="grid"></div>
-
-<p id="total"></p>
-
-<button onclick="pagar()">💰 PAGAR</button>
-
-<div class="qr" id="qr">
-<p>Escanea y paga:</p>
-<img src="qr.png" width="200">
-
-<button onclick="yaPague()">✅ YA PAGUÉ</button>
+<div id="pagoBox" class="qr" style="display:none;">
+<h3>Escanea para pagar</h3>
+<img src="qr.png">
+</div>
 </div>
 
-<!-- PANEL ADMIN -->
+<div class="card">
+<div id="grid" class="grid"></div>
+</div>
+
+</div>
+
 <div class="admin" id="admin">
-<h3>📊 ADMIN</h3>
-<p>Vendidos: <span id="vendidos">0</span></p>
-
-<button onclick="exportar()">📥 Excel</button>
+<h3>ADMIN</h3>
+<button onclick="exportarExcel()">Excel</button>
+<button onclick="reset()">Reset</button>
 
 <table>
-<thead>
-<tr>
-<th>#</th>
-<th>Nombre</th>
-<th>Tel</th>
-</tr>
-</thead>
+<thead><tr><th>#</th><th>Nombre</th><th>Tel</th></tr></thead>
 <tbody id="tabla"></tbody>
 </table>
-</div>
-
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
-const firebaseConfig = {
-apiKey: "TU_API",
-authDomain: "TU_DOMINIO",
-databaseURL: "TU_DATABASE",
-projectId: "TU_ID",
-storageBucket: "",
-messagingSenderId: "",
-appId: ""
+const firebaseConfig={
+apiKey:"AIzaSyBoCNV94pAyGK7bhNE5rVjqOPI40JB4sXQ",
+authDomain:"rifa-6dd5b.firebaseapp.com",
+databaseURL:"https://rifa-6dd5b-default-rtdb.firebaseio.com",
+projectId:"rifa-6dd5b"
 };
 
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const db=firebase.database();
 
-let seleccionados=[]
-let precio=3
+let seleccionados=[];
+const precio=5;
+const total=500;
+const numeroWhatsApp="593XXXXXXXXX";
 
-let grid=document.getElementById("grid")
+function cargar(){
+let grid=document.getElementById("grid");
+for(let i=1;i<=total;i++){
+let d=document.createElement("div");
+d.className="num libre";
+d.innerText=i;
+d.onclick=()=>seleccionar(i);
+grid.appendChild(d);
+}
+cargarDatos();
+}
 
-for(let i=1;i<=10000;i++){
-let d=document.createElement("div")
-d.className="num"
-d.innerText=i
-
-d.onclick=()=>{
-if(seleccionados.includes(i)){
-seleccionados=seleccionados.filter(n=>n!==i)
-d.classList.remove("selected")
+function seleccionar(n){
+if(seleccionados.includes(n)){
+seleccionados=seleccionados.filter(x=>x!==n);
 }else{
-seleccionados.push(i)
-d.classList.add("selected")
+seleccionados.push(n);
 }
-actualizar()
-}
-
-grid.appendChild(d)
+actualizarUI();
 }
 
-function actualizar(){
-document.getElementById("total").innerText=
-"Total: $"+(seleccionados.length*precio)
+function actualizarUI(){
+document.querySelectorAll(".num").forEach(d=>{
+let n=parseInt(d.innerText);
+d.classList.toggle("seleccionado",seleccionados.includes(n));
+});
+document.getElementById("totalBox").innerText=
+"Seleccionados: "+seleccionados.length+" | Total: $"+(seleccionados.length*precio);
 }
 
-function pagar(){
-if(seleccionados.length==0){
-alert("Selecciona números")
-return
-}
-document.getElementById("qr").style.display="block"
-}
+function comprar(){
+if(seleccionados.length==0)return alert("Selecciona números");
 
-function yaPague(){
-let nombre=document.getElementById("nombre").value
-let tel=document.getElementById("tel").value
+let nombre=prompt("Nombre:");
+let tel=prompt("Teléfono:");
+if(!nombre||!tel)return;
 
-if(!nombre || !tel){
-alert("Completa datos")
-return
-}
+let totalP=seleccionados.length*precio;
 
 seleccionados.forEach(n=>{
 db.ref("rifa/"+n).set({
-nombre,
-tel
-})
-})
+nombre,tel,estado:"pendiente"
+});
+});
 
-let link="https://wa.me/593987838871?text=Ya pagué números: "+seleccionados.join(",")
-window.open(link,"_blank")
+document.getElementById("pagoBox").style.display="block";
+
+let msg=encodeURIComponent(
+"Compra rifa\nNombre:"+nombre+
+"\nTel:"+tel+
+"\nNums:"+seleccionados.join(",")+
+"\nTotal:$"+totalP
+);
+
+window.open("https://wa.me/"+numeroWhatsApp+"?text="+msg);
+
+seleccionados=[];
+actualizarUI();
 }
 
-function cargar(){
+function cargarDatos(){
 db.ref("rifa").on("value",snap=>{
-let data=snap.val()||{}
-let tabla=document.getElementById("tabla")
-tabla.innerHTML=""
-let count=0
+let data=snap.val()||{};
+let c=0;
 
 for(let n in data){
-count++
-let d=data[n]
-
-tabla.innerHTML+=`
-<tr>
-<td>${n}</td>
-<td>${d.nombre}</td>
-<td>${d.tel}</td>
-</tr>`
+c++;
+document.querySelectorAll(".num").forEach(d=>{
+if(d.innerText==n){
+d.className="num "+(data[n].estado=="pagado"?"pagado":"pendiente");
+}
+});
 }
 
-document.getElementById("vendidos").innerText=count
-})
+document.getElementById("vendidos").innerText=c;
+});
 }
 
-function exportar(){
-let csv="Numero,Nombre,Telefono\n"
-
-db.ref("rifa").once("value",snap=>{
-let data=snap.val()||{}
-
-for(let n in data){
-let d=data[n]
-csv+=`${n},${d.nombre},${d.tel}\n`
+function exportarExcel(){
+db.ref("rifa").once("value").then(s=>{
+let d=s.val(),csv="Num,Nombre,Tel\n";
+for(let n in d)csv+=n+","+d[n].nombre+","+d[n].tel+"\n";
+let a=document.createElement("a");
+a.href=URL.createObjectURL(new Blob([csv]));
+a.download="rifa.csv";
+a.click();
+});
 }
 
-let blob=new Blob([csv])
-let a=document.createElement("a")
-a.href=URL.createObjectURL(blob)
-a.download="rifa.csv"
-a.click()
-})
-}
+function reset(){db.ref("rifa").remove();}
 
 document.addEventListener("keydown",e=>{
-if(e.key==="a"){
-document.getElementById("admin").style.display="block"
-cargar()
-}
-})
+if(e.key=="a")document.getElementById("admin").style.display="block";
+});
+
+cargar();
 </script>
 
 </body>
