@@ -1,8 +1,8 @@
-```html id="responsivepro1"
+```html id="fullprofinal"
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Rifa Profesional</title>
+  <title>Rifa PRO</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -32,7 +32,6 @@
       padding: 15px;
       margin: 10px 0;
       border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
     }
 
     .grid {
@@ -47,7 +46,6 @@
       font-weight: bold;
       text-align: center;
       cursor: pointer;
-      font-size: 14px;
     }
 
     .libre { background: #22c55e; }
@@ -60,7 +58,6 @@
       border: none;
       width: 100%;
       margin-top: 5px;
-      font-size: 16px;
     }
 
     .row {
@@ -78,7 +75,6 @@
       cursor: pointer;
       background: #22c55e;
       color: black;
-      font-size: 14px;
     }
 
     .nav {
@@ -87,27 +83,31 @@
       align-items: center;
     }
 
-    .nav button {
-      flex: unset;
-      width: 100px;
+    .admin {
+      display: none;
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      background: black;
+      padding: 10px;
+      max-height: 80vh;
+      overflow: auto;
     }
 
-    @media (max-width: 600px) {
-      .num {
-        padding: 12px;
-        font-size: 12px;
-      }
+    table {
+      width: 100%;
+      font-size: 12px;
+    }
 
-      button {
-        font-size: 13px;
-        padding: 10px;
-      }
+    td, th {
+      border: 1px solid gray;
+      padding: 4px;
     }
   </style>
 </head>
 <body>
 
-<header>🎟️ RIFA PROFESIONAL</header>
+<header>🎟️ RIFA PRO</header>
 
 <div class="container">
 
@@ -117,18 +117,21 @@
   </div>
 
   <div class="card">
-    💰 $5 por número  
-    <br>
+    💰 $5 por número <br>
     Vendidos: <span id="vendidos">0</span>
+
+    <hr>
+
+    <h3>💳 Pago por QR</h3>
+    <img src="qr.png" style="width:200px;">
+    <p>Después presiona "YA PAGUÉ"</p>
   </div>
 
   <div class="card">
-    🔍 Buscar número
-    <input type="number" id="buscar" placeholder="Ej: 25">
-
+    <input type="number" id="buscar" placeholder="Buscar número">
     <div class="row">
       <button onclick="buscarNum()">Buscar</button>
-      <button onclick="aleatorio()">🎲 Aleatorio</button>
+      <button onclick="aleatorio()">🎲</button>
     </div>
   </div>
 
@@ -140,6 +143,23 @@
 
   <div id="grid" class="grid"></div>
 
+</div>
+
+<div class="admin" id="admin">
+  <h3>ADMIN</h3>
+  <button onclick="reset()">Reset</button>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Nombre</th>
+        <th>Teléfono</th>
+        <th>Estado</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="tabla"></tbody>
+  </table>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -160,39 +180,39 @@ let paginaActual = 1;
 const porPagina = 100;
 const total = 2000;
 
+let ultimoNumero = null;
+
 const grid = document.getElementById("grid");
 
-// cargar
 function cargarPagina() {
   grid.innerHTML = "";
 
   let inicio = (paginaActual - 1) * porPagina + 1;
   let fin = inicio + porPagina - 1;
 
-  document.getElementById("pagina").innerText =
-    "Página " + paginaActual;
+  document.getElementById("pagina").innerText = "Página " + paginaActual;
 
   for (let i = inicio; i <= fin; i++) {
     const div = document.createElement("div");
     div.classList.add("num", "libre");
-    div.innerText = String(i).padStart(4, '0');
-
+    div.innerText = String(i).padStart(4,'0');
     div.onclick = () => seleccionar(i);
-
     grid.appendChild(div);
   }
 
-  actualizarEstados();
+  cargarDatos();
 }
 
-// estados
-function actualizarEstados() {
-  db.ref("rifa").once("value", snap => {
+function cargarDatos() {
+  db.ref("rifa").on("value", snap => {
     const data = snap.val() || {};
     let count = 0;
+    const tabla = document.getElementById("tabla");
+    tabla.innerHTML = "";
 
     document.querySelectorAll(".num").forEach(div => {
       const n = parseInt(div.innerText);
+      div.className = "num libre";
 
       if (data[n]) {
         count++;
@@ -202,6 +222,19 @@ function actualizarEstados() {
         } else {
           div.classList.add("pagado");
         }
+
+        tabla.innerHTML += `
+          <tr>
+            <td>${n}</td>
+            <td>${data[n].nombre}</td>
+            <td>${data[n].telefono}</td>
+            <td>${data[n].estado}</td>
+            <td>
+              <button onclick="pagar(${n})">✔</button>
+              <button onclick="eliminar(${n})">❌</button>
+            </td>
+          </tr>
+        `;
       }
     });
 
@@ -209,55 +242,13 @@ function actualizarEstados() {
   });
 }
 
-// buscar
-function buscarNum() {
-  const n = document.getElementById("buscar").value;
-
-  if (!n || n < 1 || n > total) {
-    alert("Número inválido");
-    return;
-  }
-
-  paginaActual = Math.ceil(n / porPagina);
-  cargarPagina();
-
-  setTimeout(() => {
-    document.querySelectorAll(".num").forEach(div => {
-      if (parseInt(div.innerText) == n) {
-        div.style.border = "3px solid yellow";
-      }
-    });
-  }, 300);
-}
-
-// aleatorio
-function aleatorio() {
-  const n = Math.floor(Math.random() * total) + 1;
-  document.getElementById("buscar").value = n;
-  buscarNum();
-}
-
-// nav
-function next() {
-  if (paginaActual < total / porPagina) {
-    paginaActual++;
-    cargarPagina();
-  }
-}
-
-function prev() {
-  if (paginaActual > 1) {
-    paginaActual--;
-    cargarPagina();
-  }
-}
-
-// comprar
 function seleccionar(num) {
   const nombre = prompt("Nombre:");
   const telefono = prompt("Teléfono:");
 
   if (!nombre || !telefono) return;
+
+  ultimoNumero = num;
 
   db.ref("rifa/" + num).set({
     nombre,
@@ -272,7 +263,67 @@ function seleccionar(num) {
   );
 
   window.open("https://wa.me/593XXXXXXXXX?text=" + msg);
+
+  setTimeout(() => {
+    if (confirm("¿Ya realizaste el pago?")) {
+      yaPague();
+    }
+  }, 1000);
 }
+
+function yaPague() {
+  if (!ultimoNumero) return;
+
+  db.ref("rifa/" + ultimoNumero).update({
+    estado: "pagado"
+  });
+
+  alert("Pago enviado. Espera confirmación.");
+}
+
+function pagar(num) {
+  db.ref("rifa/" + num).update({ estado: "pagado" });
+}
+
+function eliminar(num) {
+  db.ref("rifa/" + num).remove();
+}
+
+function reset() {
+  db.ref("rifa").remove();
+}
+
+function buscarNum() {
+  const n = document.getElementById("buscar").value;
+  paginaActual = Math.ceil(n / porPagina);
+  cargarPagina();
+}
+
+function aleatorio() {
+  const n = Math.floor(Math.random() * total) + 1;
+  document.getElementById("buscar").value = n;
+  buscarNum();
+}
+
+function next() {
+  if (paginaActual < total / porPagina) {
+    paginaActual++;
+    cargarPagina();
+  }
+}
+
+function prev() {
+  if (paginaActual > 1) {
+    paginaActual--;
+    cargarPagina();
+  }
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "a") {
+    document.getElementById("admin").style.display = "block";
+  }
+});
 
 cargarPagina();
 </script>
