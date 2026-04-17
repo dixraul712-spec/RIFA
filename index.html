@@ -54,23 +54,26 @@ header{
 }
 
 button{
-  padding:8px;
+  padding:10px;
   border:none;
-  border-radius:8px;
+  border-radius:10px;
   background:#22c55e;
   color:white;
   cursor:pointer;
+  width:100%;
+  margin-top:10px;
 }
 
 .qr{
   display:flex;
   gap:20px;
   flex-wrap:wrap;
-  margin-top:10px;
+  margin-top:15px;
+  align-items:center;
 }
 
 .qr img{
-  width:180px;
+  width:200px;
   background:white;
   padding:10px;
   border-radius:10px;
@@ -82,7 +85,6 @@ button{
 
 <header>🎟️ RIFA PREMIUM</header>
 
-<!-- 🔐 BOTÓN ADMIN OCULTO -->
 <button onclick="abrirAdmin()" style="position:fixed;top:10px;right:10px;">🔐</button>
 
 <div class="container">
@@ -102,21 +104,26 @@ button{
 <img src="qr.png">
 
 <div>
+<h3>💳 PAGO</h3>
+<p><b>Total a pagar:</b> $<span id="totalPago">0</span></p>
+
 <b>DATOS</b><br>
 LUIS ALVEAR<br>
-CUENTA PICHINCHA<br>
+CUENTA DE AHORROS PICHINCHA<br>
 2204309484<br>
 0987838871<br><br>
-<b>ENVÍA COMPROBANTE</b>
+
+<b>RECUERDA:</b><br>
+Enviar comprobante por WhatsApp
 </div>
 </div>
+
 </div>
 
 <div class="card">
 <div id="grid" class="grid"></div>
 </div>
 
-<!-- 🔒 PANEL ADMIN -->
 <div class="card" id="adminPanel" style="display:none;">
 <h3>📊 REGISTROS</h3>
 
@@ -220,13 +227,14 @@ nombre,cedula,tel,estado:"pendiente"
 });
 });
 
+document.getElementById("totalPago").innerText = totalP;
 document.getElementById("pagoBox").style.display="flex";
 
 let msg=encodeURIComponent(
 "Compra rifa\n"+nombre+"\n"+cedula+"\n"+tel+"\nNums:"+seleccionados.join(",")+"\n$"+totalP
 );
 
-window.open("https://wa.me/"+numeroWhatsApp+"?text="+msg);
+window.open("https://wa.me/"+0987838871+"?text="+msg);
 
 seleccionados=[];
 actualizarUI();
