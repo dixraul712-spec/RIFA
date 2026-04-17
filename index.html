@@ -2,231 +2,278 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rifa Premium</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
-
 <style>
 body{
-  font-family:'Poppins',sans-serif;
-  background:linear-gradient(135deg,#0f172a,#1e293b);
-  color:white;
-  margin:0;
+font-family:Arial;
+background:#0f172a;
+color:white;
+margin:0;
+text-align:center;
 }
 
-header{
-  background:rgba(34,197,94,0.9);
-  padding:15px;
-  text-align:center;
-  font-weight:700;
+.container{
+padding:15px;
+max-width:900px;
+margin:auto;
 }
 
-.container{padding:15px;max-width:1000px;margin:auto}
+h1{
+font-size:22px;
+}
 
-.card{
-  background:rgba(255,255,255,0.05);
-  border-radius:15px;
-  padding:15px;
-  margin-bottom:15px;
+.premios{
+background:linear-gradient(135deg,#22c55e,#16a34a);
+padding:15px;
+border-radius:12px;
+color:black;
+font-weight:bold;
+margin:15px 0;
 }
 
 .grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(70px,1fr));
-  gap:10px;
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(55px,1fr));
+gap:6px;
+max-height:300px;
+overflow:auto;
+padding:5px;
 }
 
 .num{
-  padding:12px;
-  border-radius:12px;
-  text-align:center;
-  cursor:pointer;
-  font-weight:bold;
+padding:8px;
+background:#1e293b;
+border-radius:8px;
+cursor:pointer;
+font-size:12px;
 }
 
-.libre{background:#22c55e}
-.pendiente{background:#f59e0b;cursor:not-allowed;opacity:0.7}
-.pagado{background:#ef4444;cursor:not-allowed;opacity:0.7}
-
-.seleccionado{
-  transform:scale(1.1);
-  box-shadow:0 0 10px yellow;
+.selected{
+background:#22c55e;
+color:black;
 }
-
-/* EFECTO BLOQUEO */
-.bloqueado-efecto{
-  animation:shake 0.3s;
-}
-@keyframes shake{
-  0%{transform:translateX(0)}
-  25%{transform:translateX(-3px)}
-  50%{transform:translateX(3px)}
-  75%{transform:translateX(-3px)}
-  100%{transform:translateX(0)}
-}
-
-/* TOAST */
-.toast{
-  position:fixed;
-  bottom:20px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#ef4444;
-  color:white;
-  padding:10px 20px;
-  border-radius:10px;
-  opacity:0;
-  transition:0.3s;
-}
-.toast.show{opacity:1}
 
 button{
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:12px;
-  background:#22c55e;
-  color:white;
-  font-weight:bold;
-  margin-top:10px;
+margin-top:10px;
+padding:12px;
+border:none;
+border-radius:10px;
+background:#22c55e;
+font-weight:bold;
+cursor:pointer;
+width:100%;
 }
 
-.qr img{width:180px;background:white;padding:10px;border-radius:10px}
+.qr{
+display:none;
+margin-top:15px;
+}
 
+input{
+width:100%;
+padding:10px;
+margin-top:10px;
+border-radius:8px;
+border:none;
+}
+
+.admin{
+display:none;
+margin-top:20px;
+background:#111;
+padding:10px;
+border-radius:10px;
+}
+
+table{
+width:100%;
+font-size:12px;
+}
+
+td,th{
+padding:5px;
+border-bottom:1px solid #333;
+}
 </style>
 </head>
 
 <body>
 
-<header>🎟️ RIFA SOLIDARIA</header>
-
 <div class="container">
 
-<div class="card">
-<h2>🎯 ESCOGE TU NÚMERO</h2>
-<div id="totalBox">Seleccionados: 0 | Total: $0</div>
-<button onclick="comprar()">💳 Comprar</button>
+<h1>🎟 Rifa Premium</h1>
 
-<div id="pagoBox" style="display:none;text-align:center;">
-<h3>Escanea para pagar</h3>
-<img src="qr.png">
-</div>
+<div class="premios">
+🎁 PREMIOS OFICIALES<br><br>
+🥇 PlayStation 5 🎮<br>
+🥈 CPU NUC completa 💻<br>
+🥉 $200 en efectivo 💵
 </div>
 
-<div class="card">
-<div id="grid" class="grid"></div>
+<input id="nombre" placeholder="Tu nombre">
+<input id="tel" placeholder="Tu WhatsApp">
+
+<p>Selecciona tus números:</p>
+
+<div class="grid" id="grid"></div>
+
+<p id="total"></p>
+
+<button onclick="pagar()">💰 PAGAR</button>
+
+<div class="qr" id="qr">
+<p>Escanea y paga:</p>
+<img src="qr.png" width="200">
+
+<button onclick="yaPague()">✅ YA PAGUÉ</button>
+</div>
+
+<!-- PANEL ADMIN -->
+<div class="admin" id="admin">
+<h3>📊 ADMIN</h3>
+<p>Vendidos: <span id="vendidos">0</span></p>
+
+<button onclick="exportar()">📥 Excel</button>
+
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Nombre</th>
+<th>Tel</th>
+</tr>
+</thead>
+<tbody id="tabla"></tbody>
+</table>
 </div>
 
 </div>
-
-<div id="toast" class="toast">🚫 Número no disponible</div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
-const firebaseConfig={
-apiKey:"TU_API",
-databaseURL:"TU_DATABASE"
+const firebaseConfig = {
+apiKey: "TU_API",
+authDomain: "TU_DOMINIO",
+databaseURL: "TU_DATABASE",
+projectId: "TU_ID",
+storageBucket: "",
+messagingSenderId: "",
+appId: ""
 };
 
 firebase.initializeApp(firebaseConfig);
-const db=firebase.database();
+const db = firebase.database();
 
-let seleccionados=[];
-const precio=5;
-const total=500;
-const numeroWhatsApp="593XXXXXXXXX";
+let seleccionados=[]
+let precio=3
 
-function cargar(){
-let grid=document.getElementById("grid");
-for(let i=1;i<=total;i++){
-let d=document.createElement("div");
-d.className="num libre";
-d.innerText=i;
-d.onclick=()=>seleccionar(i);
-grid.appendChild(d);
-}
-cargarDatos();
-}
+let grid=document.getElementById("grid")
 
-function seleccionar(n){
-let el=[...document.querySelectorAll(".num")]
-.find(d=>parseInt(d.innerText)===n);
+for(let i=1;i<=10000;i++){
+let d=document.createElement("div")
+d.className="num"
+d.innerText=i
 
-// BLOQUEO PRO
-if(!el.classList.contains("libre")){
-el.classList.add("bloqueado-efecto");
-setTimeout(()=>el.classList.remove("bloqueado-efecto"),300);
-
-let t=document.getElementById("toast");
-t.classList.add("show");
-setTimeout(()=>t.classList.remove("show"),1500);
-
-return;
-}
-
-if(seleccionados.includes(n)){
-seleccionados=seleccionados.filter(x=>x!==n);
+d.onclick=()=>{
+if(seleccionados.includes(i)){
+seleccionados=seleccionados.filter(n=>n!==i)
+d.classList.remove("selected")
 }else{
-seleccionados.push(n);
+seleccionados.push(i)
+d.classList.add("selected")
 }
-actualizarUI();
-}
-
-function actualizarUI(){
-document.querySelectorAll(".num").forEach(d=>{
-let n=parseInt(d.innerText);
-d.classList.toggle("seleccionado",seleccionados.includes(n));
-});
-document.getElementById("totalBox").innerText=
-"Seleccionados: "+seleccionados.length+" | Total: $"+(seleccionados.length*precio);
+actualizar()
 }
 
-function comprar(){
-if(seleccionados.length==0)return alert("Selecciona números");
+grid.appendChild(d)
+}
 
-let nombre=prompt("Nombre:");
-let tel=prompt("Tel:");
-if(!nombre||!tel)return;
+function actualizar(){
+document.getElementById("total").innerText=
+"Total: $"+(seleccionados.length*precio)
+}
 
-let totalP=seleccionados.length*precio;
+function pagar(){
+if(seleccionados.length==0){
+alert("Selecciona números")
+return
+}
+document.getElementById("qr").style.display="block"
+}
+
+function yaPague(){
+let nombre=document.getElementById("nombre").value
+let tel=document.getElementById("tel").value
+
+if(!nombre || !tel){
+alert("Completa datos")
+return
+}
 
 seleccionados.forEach(n=>{
-db.ref("rifa/"+n).set({nombre,tel,estado:"pendiente"});
-});
+db.ref("rifa/"+n).set({
+nombre,
+tel
+})
+})
 
-document.getElementById("pagoBox").style.display="block";
-
-let msg=encodeURIComponent(
-"Compra rifa\nNombre:"+nombre+
-"\nTel:"+tel+
-"\nNums:"+seleccionados.join(",")+
-"\nTotal:$"+totalP
-);
-
-window.open("https://wa.me/"+0987838871+"?text="+msg);
-
-seleccionados=[];
-actualizarUI();
+let link="https://wa.me/593TU_NUMERO?text=Ya pagué números: "+seleccionados.join(",")
+window.open(link,"_blank")
 }
 
-function cargarDatos(){
+function cargar(){
 db.ref("rifa").on("value",snap=>{
-let data=snap.val()||{};
+let data=snap.val()||{}
+let tabla=document.getElementById("tabla")
+tabla.innerHTML=""
+let count=0
 
 for(let n in data){
-document.querySelectorAll(".num").forEach(d=>{
-if(d.innerText==n){
-d.className="num "+(data[n].estado=="pagado"?"pagado":"pendiente");
-}
-});
-}
-});
+count++
+let d=data[n]
+
+tabla.innerHTML+=`
+<tr>
+<td>${n}</td>
+<td>${d.nombre}</td>
+<td>${d.tel}</td>
+</tr>`
 }
 
-cargar();
+document.getElementById("vendidos").innerText=count
+})
+}
+
+function exportar(){
+let csv="Numero,Nombre,Telefono\n"
+
+db.ref("rifa").once("value",snap=>{
+let data=snap.val()||{}
+
+for(let n in data){
+let d=data[n]
+csv+=`${n},${d.nombre},${d.tel}\n`
+}
+
+let blob=new Blob([csv])
+let a=document.createElement("a")
+a.href=URL.createObjectURL(blob)
+a.download="rifa.csv"
+a.click()
+})
+}
+
+document.addEventListener("keydown",e=>{
+if(e.key==="a"){
+document.getElementById("admin").style.display="block"
+cargar()
+}
+})
 </script>
 
 </body>
