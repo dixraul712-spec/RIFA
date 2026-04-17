@@ -83,6 +83,9 @@ button{
 .datos{
   font-size:14px;
   text-align:left;
+  background:rgba(0,0,0,0.4);
+  padding:10px;
+  border-radius:10px;
 }
 
 .total{font-weight:bold}
@@ -107,10 +110,13 @@ button{
 <button onclick="comprar()">💳 Comprar ahora</button>
 
 <div id="pagoBox" class="qr" style="display:none;">
-<img src="qr.png">
+
+<img id="qrImg">
+
+<div class="datos" id="datosCliente"></div>
 
 <div class="datos">
-<b>DATOS</b><br>
+<b>DATOS DE PAGO</b><br>
 LUIS ALVEAR<br>
 CUENTA DE AHORROS PICHINCHA<br>
 2204309484<br>
@@ -132,10 +138,10 @@ CUENTA DE AHORROS PICHINCHA<br>
 
 <script>
 const firebaseConfig={
-apiKey:"AIzaSyBoCNV94pAyGK7bhNE5rVjqOPI40JB4sXQ",
-authDomain:"rifa-6dd5b.firebaseapp.com",
-databaseURL:"https://rifa-6dd5b-default-rtdb.firebaseio.com",
-projectId:"rifa-6dd5b"
+apiKey:"TU_API_KEY",
+authDomain:"TU_AUTH_DOMAIN",
+databaseURL:"TU_DATABASE_URL",
+projectId:"TU_PROJECT_ID"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -194,23 +200,40 @@ if(!nombre||!tel)return;
 
 let totalP=seleccionados.length*precio;
 
+// Guardar
 seleccionados.forEach(n=>{
 db.ref("rifa/"+n).set({
 nombre,tel,estado:"pendiente"
 });
 });
 
+// Mostrar datos cliente
+document.getElementById("datosCliente").innerHTML = `
+<b>TUS DATOS</b><br>
+Nombre: ${nombre}<br>
+Tel: ${tel}<br>
+Números: ${seleccionados.join(",")}<br>
+Total: $${totalP}
+`;
+
+// Generar QR
+let textoQR = `PAGO RIFA
+Nombre: ${nombre}
+Tel: ${tel}
+Nums: ${seleccionados.join(",")}
+Total: $${totalP}`;
+
+let urlQR = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(textoQR);
+
+document.getElementById("qrImg").src = urlQR;
+
+// Mostrar
 document.getElementById("pagoBox").style.display="flex";
 
-let msg=encodeURIComponent(
-"Compra rifa\nNombre:"+nombre+
-"\nTel:"+tel+
-"\nNums:"+seleccionados.join(",")+
-"\nTotal:$"+totalP
-);
+// WhatsApp
+window.open("https://wa.me/"+0987838871+"?text="+encodeURIComponent(textoQR));
 
-window.open("https://wa.me/"+numeroWhatsApp+"?text="+msg);
-
+// Reset
 seleccionados=[];
 actualizarUI();
 }
