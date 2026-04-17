@@ -67,10 +67,10 @@ button{
 
 .qr{
   display:flex;
-  gap:20px;
   align-items:center;
-  flex-wrap:wrap;
   justify-content:center;
+  gap:20px;
+  flex-wrap:wrap;
 }
 
 .qr img{
@@ -81,11 +81,11 @@ button{
 }
 
 .datos{
-  font-size:14px;
-  text-align:left;
   background:rgba(0,0,0,0.4);
-  padding:10px;
+  padding:12px;
   border-radius:10px;
+  font-size:14px;
+  max-width:250px;
 }
 
 .total{font-weight:bold}
@@ -111,20 +111,19 @@ button{
 
 <div id="pagoBox" class="qr" style="display:none;">
 
-<img id="qrImg">
-
-<div class="datos" id="datosCliente"></div>
+<img src="qr.png">
 
 <div class="datos">
-<b>DATOS DE PAGO</b><br>
-LUIS ALVEAR<br>
-CUENTA DE AHORROS PICHINCHA<br>
-2204309484<br>
-0987838871<br><br>
-<b>RECUERDA ENVIAR EL COMPROBANTE AL WHATSAPP</b>
+<b>DATOS DE PAGO</b><br><br>
+👤 <b>LUIS ALVEAR</b><br>
+🏦 Cuenta de Ahorros - Pichincha<br>
+💳 2204309484<br>
+📱 0987838871<br><br>
+⚠️ <b>RECUERDA ENVIAR EL COMPROBANTE AL WHATSAPP</b>
 </div>
 
 </div>
+
 </div>
 
 <div class="card">
@@ -138,10 +137,10 @@ CUENTA DE AHORROS PICHINCHA<br>
 
 <script>
 const firebaseConfig={
-apiKey:"TU_API_KEY",
-authDomain:"TU_AUTH_DOMAIN",
-databaseURL:"TU_DATABASE_URL",
-projectId:"TU_PROJECT_ID"
+apiKey:"AIzaSyBoCNV94pAyGK7bhNE5rVjqOPI40JB4sXQ",
+authDomain:"rifa-6dd5b.firebaseapp.com",
+databaseURL:"https://rifa-6dd5b-default-rtdb.firebaseio.com",
+projectId:"rifa-6dd5b"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -166,7 +165,7 @@ cargarDatos();
 
 // 🔥 BLOQUEO PRO
 function seleccionar(n){
-let elemento = document.querySelectorAll(".num")[n-1];
+let elemento=document.querySelectorAll(".num")[n-1];
 
 if(elemento.classList.contains("pendiente") || elemento.classList.contains("pagado")){
 alert("❌ Este número ya no está disponible");
@@ -200,40 +199,23 @@ if(!nombre||!tel)return;
 
 let totalP=seleccionados.length*precio;
 
-// Guardar
 seleccionados.forEach(n=>{
 db.ref("rifa/"+n).set({
 nombre,tel,estado:"pendiente"
 });
 });
 
-// Mostrar datos cliente
-document.getElementById("datosCliente").innerHTML = `
-<b>TUS DATOS</b><br>
-Nombre: ${nombre}<br>
-Tel: ${tel}<br>
-Números: ${seleccionados.join(",")}<br>
-Total: $${totalP}
-`;
-
-// Generar QR
-let textoQR = `PAGO RIFA
-Nombre: ${nombre}
-Tel: ${tel}
-Nums: ${seleccionados.join(",")}
-Total: $${totalP}`;
-
-let urlQR = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(textoQR);
-
-document.getElementById("qrImg").src = urlQR;
-
-// Mostrar
 document.getElementById("pagoBox").style.display="flex";
 
-// WhatsApp
-window.open("https://wa.me/"+0987838871+"?text="+encodeURIComponent(textoQR));
+let msg=encodeURIComponent(
+"Compra rifa\nNombre:"+nombre+
+"\nTel:"+tel+
+"\nNums:"+seleccionados.join(",")+
+"\nTotal:$"+totalP
+);
 
-// Reset
+window.open("https://wa.me/"+numeroWhatsApp+"?text="+msg);
+
 seleccionados=[];
 actualizarUI();
 }
