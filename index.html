@@ -1,4 +1,4 @@
-```html id="fullprofinal"
+```html
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,44 +7,70 @@
 
   <style>
     body {
-      font-family: 'Segoe UI', Arial;
+      font-family: 'Segoe UI', sans-serif;
       background: #0f172a;
-      color: white;
       margin: 0;
+      color: white;
     }
 
     header {
-      padding: 15px;
+      background: linear-gradient(90deg,#22c55e,#4ade80);
+      color: black;
       text-align: center;
-      background: #020617;
-      font-size: 20px;
+      padding: 15px;
+      font-size: 22px;
       font-weight: bold;
     }
 
     .container {
       max-width: 1000px;
       margin: auto;
-      padding: 10px;
+      padding: 15px;
     }
 
     .card {
       background: #1e293b;
       padding: 15px;
-      margin: 10px 0;
       border-radius: 12px;
+      margin-bottom: 15px;
+    }
+
+    .mensaje {
+      background:#22c55e;
+      color:black;
+      padding:10px;
+      border-radius:8px;
+      text-align:center;
+      font-weight:bold;
+      margin-top:10px;
+    }
+
+    .flex {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .qr img {
+      width:180px;
+      background:white;
+      padding:10px;
+      border-radius:10px;
     }
 
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-      gap: 10px;
+      gap: 8px;
     }
 
     .num {
-      padding: 15px;
-      border-radius: 10px;
-      font-weight: bold;
+      padding: 12px;
+      border-radius: 8px;
       text-align: center;
+      font-weight: bold;
       cursor: pointer;
     }
 
@@ -57,20 +83,12 @@
       border-radius: 8px;
       border: none;
       width: 100%;
-      margin-top: 5px;
-    }
-
-    .row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
     }
 
     button {
-      flex: 1;
-      padding: 12px;
-      border-radius: 8px;
+      padding: 10px;
       border: none;
+      border-radius: 8px;
       font-weight: bold;
       cursor: pointer;
       background: #22c55e;
@@ -84,27 +102,31 @@
     }
 
     .admin {
-      display: none;
-      position: fixed;
-      bottom: 10px;
-      right: 10px;
-      background: black;
-      padding: 10px;
-      max-height: 80vh;
-      overflow: auto;
+      display:none;
+      position:fixed;
+      bottom:0;
+      right:0;
+      width:100%;
+      max-height:80vh;
+      background:#020617;
+      overflow:auto;
+      padding:10px;
     }
 
     table {
-      width: 100%;
-      font-size: 12px;
+      width:100%;
+      border-collapse:collapse;
+      font-size:12px;
     }
 
-    td, th {
-      border: 1px solid gray;
-      padding: 4px;
+    th,td {
+      border:1px solid gray;
+      padding:5px;
+      text-align:center;
     }
   </style>
 </head>
+
 <body>
 
 <header>🎟️ RIFA PRO</header>
@@ -113,26 +135,35 @@
 
   <div class="card">
     🥇 PlayStation 5 <br>
-    🥈 Computadora Core i7 1TB
+    🥈 Computadora Core i7 1TB <br>
+    💰 $5 por número <br><br>
+
+    Vendidos: <b id="vendidos">0</b>
+
+    <div class="mensaje">
+      💬 Pagos seguros por transferencia + envío de comprobante  
+      ✔ Tu número será confirmado inmediatamente
+    </div>
   </div>
 
-  <div class="card">
-    💰 $5 por número <br>
-    Vendidos: <span id="vendidos">0</span>
+  <div class="card flex">
+    <div>
+      <h3>💳 Pago por QR</h3>
+      <p>Escanea y sube tu comprobante</p>
 
-    <hr>
+      <input type="file" id="comprobante">
+      <button onclick="enviarComprobante()">📤 Enviar comprobante</button>
+    </div>
 
-    <h3>💳 Pago por QR</h3>
-    <img src="qr.png" style="width:200px;">
-    <p>Después presiona "YA PAGUÉ"</p>
+    <div class="qr">
+      <img src="qr.png">
+    </div>
   </div>
 
   <div class="card">
     <input type="number" id="buscar" placeholder="Buscar número">
-    <div class="row">
-      <button onclick="buscarNum()">Buscar</button>
-      <button onclick="aleatorio()">🎲</button>
-    </div>
+    <button onclick="buscarNum()">Buscar</button>
+    <button onclick="aleatorio()">🎲 Aleatorio</button>
   </div>
 
   <div class="card nav">
@@ -146,8 +177,11 @@
 </div>
 
 <div class="admin" id="admin">
-  <h3>ADMIN</h3>
-  <button onclick="reset()">Reset</button>
+  <h3>📊 PANEL ADMIN</h3>
+
+  <button onclick="exportarExcel()">📥 Exportar Excel</button>
+  <button onclick="reset()">🗑 Reset</button>
+
   <table>
     <thead>
       <tr>
@@ -155,6 +189,7 @@
         <th>Nombre</th>
         <th>Teléfono</th>
         <th>Estado</th>
+        <th>Comprobante</th>
         <th></th>
       </tr>
     </thead>
@@ -179,22 +214,20 @@ const db = firebase.database();
 let paginaActual = 1;
 const porPagina = 100;
 const total = 2000;
-
 let ultimoNumero = null;
 
 const grid = document.getElementById("grid");
 
 function cargarPagina() {
   grid.innerHTML = "";
-
-  let inicio = (paginaActual - 1) * porPagina + 1;
+  let inicio = (paginaActual - 1)*porPagina + 1;
   let fin = inicio + porPagina - 1;
 
   document.getElementById("pagina").innerText = "Página " + paginaActual;
 
   for (let i = inicio; i <= fin; i++) {
     const div = document.createElement("div");
-    div.classList.add("num", "libre");
+    div.classList.add("num","libre");
     div.innerText = String(i).padStart(4,'0');
     div.onclick = () => seleccionar(i);
     grid.appendChild(div);
@@ -210,31 +243,29 @@ function cargarDatos() {
     const tabla = document.getElementById("tabla");
     tabla.innerHTML = "";
 
+    Object.keys(data).forEach(n => {
+      let d = data[n];
+      count++;
+
+      tabla.innerHTML += `
+      <tr>
+        <td>${n}</td>
+        <td>${d.nombre}</td>
+        <td>${d.telefono}</td>
+        <td>${d.estado}</td>
+        <td>${d.comprobante ? `<a href="${d.comprobante}" target="_blank">Ver</a>`:""}</td>
+        <td><button onclick="pagar(${n})">✔</button></td>
+      </tr>`;
+    });
+
     document.querySelectorAll(".num").forEach(div => {
       const n = parseInt(div.innerText);
-      div.className = "num libre";
+      div.className="num libre";
 
-      if (data[n]) {
-        count++;
-
-        if (data[n].estado === "pendiente") {
-          div.classList.add("pendiente");
-        } else {
-          div.classList.add("pagado");
-        }
-
-        tabla.innerHTML += `
-          <tr>
-            <td>${n}</td>
-            <td>${data[n].nombre}</td>
-            <td>${data[n].telefono}</td>
-            <td>${data[n].estado}</td>
-            <td>
-              <button onclick="pagar(${n})">✔</button>
-              <button onclick="eliminar(${n})">❌</button>
-            </td>
-          </tr>
-        `;
+      if(data[n]){
+        if(data[n].estado==="pendiente") div.classList.add("pendiente");
+        else if(data[n].estado==="verificando") div.classList.add("pendiente");
+        else div.classList.add("pagado");
       }
     });
 
@@ -242,86 +273,96 @@ function cargarDatos() {
   });
 }
 
-function seleccionar(num) {
+function seleccionar(num){
   const nombre = prompt("Nombre:");
   const telefono = prompt("Teléfono:");
-
-  if (!nombre || !telefono) return;
+  if(!nombre || !telefono) return;
 
   ultimoNumero = num;
 
-  db.ref("rifa/" + num).set({
+  db.ref("rifa/"+num).set({
     nombre,
     telefono,
-    estado: "pendiente"
+    estado:"pendiente"
   });
+}
 
-  const msg = encodeURIComponent(
-    "Hola soy " + nombre +
-    ". Reservé el número " + num +
-    ". Envío comprobante."
-  );
+function enviarComprobante(){
+  const file = document.getElementById("comprobante").files[0];
 
-  window.open("https://wa.me/593987838871?text=" + msg);
+  if(!file || !ultimoNumero){
+    alert("Selecciona número y comprobante");
+    return;
+  }
 
-  setTimeout(() => {
-    if (confirm("¿Ya realizaste el pago?")) {
-      yaPague();
+  const reader = new FileReader();
+  reader.onload = e => {
+    db.ref("rifa/"+ultimoNumero).update({
+      estado:"verificando",
+      comprobante:e.target.result
+    });
+
+    alert("Comprobante enviado ✔");
+  };
+
+  reader.readAsDataURL(file);
+}
+
+function pagar(num){
+  db.ref("rifa/"+num).update({estado:"pagado"});
+}
+
+function exportarExcel(){
+  db.ref("rifa").once("value").then(snap=>{
+    const data=snap.val();
+    let csv="Numero,Nombre,Telefono,Estado\n";
+
+    for(let n in data){
+      let d=data[n];
+      csv+=`${n},${d.nombre},${d.telefono},${d.estado}\n`;
     }
-  }, 1000);
-}
 
-function yaPague() {
-  if (!ultimoNumero) return;
-
-  db.ref("rifa/" + ultimoNumero).update({
-    estado: "pagado"
+    const blob=new Blob([csv],{type:'text/csv'});
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="rifa.csv";
+    a.click();
   });
-
-  alert("Pago enviado. Espera confirmación.");
 }
 
-function pagar(num) {
-  db.ref("rifa/" + num).update({ estado: "pagado" });
-}
-
-function eliminar(num) {
-  db.ref("rifa/" + num).remove();
-}
-
-function reset() {
+function reset(){
   db.ref("rifa").remove();
 }
 
-function buscarNum() {
-  const n = document.getElementById("buscar").value;
-  paginaActual = Math.ceil(n / porPagina);
+function buscarNum(){
+  const n=document.getElementById("buscar").value;
+  paginaActual=Math.ceil(n/porPagina);
   cargarPagina();
 }
 
-function aleatorio() {
-  const n = Math.floor(Math.random() * total) + 1;
-  document.getElementById("buscar").value = n;
+function aleatorio(){
+  const n=Math.floor(Math.random()*total)+1;
+  document.getElementById("buscar").value=n;
   buscarNum();
 }
 
-function next() {
-  if (paginaActual < total / porPagina) {
+function next(){
+  if(paginaActual < total/porPagina){
     paginaActual++;
     cargarPagina();
   }
 }
 
-function prev() {
-  if (paginaActual > 1) {
+function prev(){
+  if(paginaActual>1){
     paginaActual--;
     cargarPagina();
   }
 }
 
-document.addEventListener("keydown", e => {
-  if (e.key === "a") {
-    document.getElementById("admin").style.display = "block";
+document.addEventListener("keydown",e=>{
+  if(e.key==="a"){
+    document.getElementById("admin").style.display="block";
   }
 });
 
