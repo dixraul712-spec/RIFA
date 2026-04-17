@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -14,32 +15,22 @@ body{
   margin:0;
 }
 
-/* HEADER */
 header{
   background:rgba(34,197,94,0.9);
-  backdrop-filter:blur(10px);
   padding:15px;
   text-align:center;
   font-weight:700;
-  font-size:18px;
-  position:sticky;
-  top:0;
 }
 
-/* CONTAINER */
 .container{padding:15px;max-width:1000px;margin:auto}
 
-/* CARD */
 .card{
   background:rgba(255,255,255,0.05);
-  backdrop-filter:blur(10px);
   border-radius:15px;
   padding:15px;
   margin-bottom:15px;
-  box-shadow:0 8px 25px rgba(0,0,0,0.3);
 }
 
-/* GRID NUMEROS */
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(70px,1fr));
@@ -52,87 +43,72 @@ header{
   text-align:center;
   cursor:pointer;
   font-weight:bold;
-  transition:0.3s;
 }
 
 .libre{background:#22c55e}
-.pendiente{background:#f59e0b}
-.pagado{background:#ef4444}
+.pendiente{background:#f59e0b;cursor:not-allowed;opacity:0.7}
+.pagado{background:#ef4444;cursor:not-allowed;opacity:0.7}
+
 .seleccionado{
   transform:scale(1.1);
   box-shadow:0 0 10px yellow;
 }
 
-/* BOTONES */
+/* EFECTO BLOQUEO */
+.bloqueado-efecto{
+  animation:shake 0.3s;
+}
+@keyframes shake{
+  0%{transform:translateX(0)}
+  25%{transform:translateX(-3px)}
+  50%{transform:translateX(3px)}
+  75%{transform:translateX(-3px)}
+  100%{transform:translateX(0)}
+}
+
+/* TOAST */
+.toast{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#ef4444;
+  color:white;
+  padding:10px 20px;
+  border-radius:10px;
+  opacity:0;
+  transition:0.3s;
+}
+.toast.show{opacity:1}
+
 button{
   width:100%;
   padding:12px;
   border:none;
   border-radius:12px;
-  background:linear-gradient(135deg,#22c55e,#16a34a);
+  background:#22c55e;
   color:white;
   font-weight:bold;
   margin-top:10px;
-  cursor:pointer;
-  transition:0.3s;
-}
-button:hover{transform:scale(1.05)}
-
-input{
-  width:100%;
-  padding:10px;
-  border-radius:10px;
-  border:none;
-  margin-top:5px;
 }
 
-/* QR */
-.qr{
-  text-align:center;
-}
-.qr img{
-  width:180px;
-  border-radius:10px;
-  background:white;
-  padding:10px;
-}
+.qr img{width:180px;background:white;padding:10px;border-radius:10px}
 
-/* ADMIN */
-.admin{
-  display:none;
-  position:fixed;
-  bottom:0;
-  width:100%;
-  background:#000;
-  max-height:80vh;
-  overflow:auto;
-}
-
-table{width:100%;font-size:12px}
-
-/* TEXTO */
-h2{margin:5px 0}
-.total{font-size:16px;font-weight:bold}
 </style>
 </head>
 
 <body>
 
-<header>🎟️ RIFA SOLIDARIA HOY POR MI MAÑANA POR TI </header>
+<header>🎟️ RIFA SOLIDARIA</header>
 
 <div class="container">
 
 <div class="card">
-<h2>🎮 PlayStation 5</h2>
-<h2>🎮 CPU NUC CORE I7 COMPLETO</h2>
-<p>$5 por número</p>
-</div>
+<h2>🎯 ESCOGE TU NÚMERO</h2>
+<div id="totalBox">Seleccionados: 0 | Total: $0</div>
+<button onclick="comprar()">💳 Comprar</button>
 
-<div class="card">
-<div id="totalBox" class="total">Seleccionados: 0 | Total: $0</div>
-<button onclick="comprar()">💳 Comprar ahora</button>
-
-<div id="pagoBox" class="qr" style="display:none;">
+<div id="pagoBox" style="display:none;text-align:center;">
 <h3>Escanea para pagar</h3>
 <img src="qr.png">
 </div>
@@ -144,26 +120,15 @@ h2{margin:5px 0}
 
 </div>
 
-<div class="admin" id="admin">
-<h3>ADMIN</h3>
-<button onclick="exportarExcel()">Excel</button>
-<button onclick="reset()">Reset</button>
-
-<table>
-<thead><tr><th>#</th><th>Nombre</th><th>Tel</th></tr></thead>
-<tbody id="tabla"></tbody>
-</table>
-</div>
+<div id="toast" class="toast">🚫 Número no disponible</div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
 const firebaseConfig={
-apiKey:"AIzaSyBoCNV94pAyGK7bhNE5rVjqOPI40JB4sXQ",
-authDomain:"rifa-6dd5b.firebaseapp.com",
-databaseURL:"https://rifa-6dd5b-default-rtdb.firebaseio.com",
-projectId:"rifa-6dd5b"
+apiKey:"TU_API",
+databaseURL:"TU_DATABASE"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -187,6 +152,21 @@ cargarDatos();
 }
 
 function seleccionar(n){
+let el=[...document.querySelectorAll(".num")]
+.find(d=>parseInt(d.innerText)===n);
+
+// BLOQUEO PRO
+if(!el.classList.contains("libre")){
+el.classList.add("bloqueado-efecto");
+setTimeout(()=>el.classList.remove("bloqueado-efecto"),300);
+
+let t=document.getElementById("toast");
+t.classList.add("show");
+setTimeout(()=>t.classList.remove("show"),1500);
+
+return;
+}
+
 if(seleccionados.includes(n)){
 seleccionados=seleccionados.filter(x=>x!==n);
 }else{
@@ -208,15 +188,13 @@ function comprar(){
 if(seleccionados.length==0)return alert("Selecciona números");
 
 let nombre=prompt("Nombre:");
-let tel=prompt("Teléfono:");
+let tel=prompt("Tel:");
 if(!nombre||!tel)return;
 
 let totalP=seleccionados.length*precio;
 
 seleccionados.forEach(n=>{
-db.ref("rifa/"+n).set({
-nombre,tel,estado:"pendiente"
-});
+db.ref("rifa/"+n).set({nombre,tel,estado:"pendiente"});
 });
 
 document.getElementById("pagoBox").style.display="block";
@@ -237,37 +215,16 @@ actualizarUI();
 function cargarDatos(){
 db.ref("rifa").on("value",snap=>{
 let data=snap.val()||{};
-let c=0;
 
 for(let n in data){
-c++;
 document.querySelectorAll(".num").forEach(d=>{
 if(d.innerText==n){
 d.className="num "+(data[n].estado=="pagado"?"pagado":"pendiente");
 }
 });
 }
-
-document.getElementById("vendidos").innerText=c;
 });
 }
-
-function exportarExcel(){
-db.ref("rifa").once("value").then(s=>{
-let d=s.val(),csv="Num,Nombre,Tel\n";
-for(let n in d)csv+=n+","+d[n].nombre+","+d[n].tel+"\n";
-let a=document.createElement("a");
-a.href=URL.createObjectURL(new Blob([csv]));
-a.download="rifa.csv";
-a.click();
-});
-}
-
-function reset(){db.ref("rifa").remove();}
-
-document.addEventListener("keydown",e=>{
-if(e.key=="a")document.getElementById("admin").style.display="block";
-});
 
 cargar();
 </script>
