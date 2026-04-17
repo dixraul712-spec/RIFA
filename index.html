@@ -19,10 +19,9 @@ header{
   padding:15px;
   text-align:center;
   font-weight:700;
-  font-size:18px;
 }
 
-.container{padding:15px;max-width:1000px;margin:auto}
+.container{padding:15px;max-width:1100px;margin:auto}
 
 .card{
   background:rgba(255,255,255,0.05);
@@ -46,8 +45,8 @@ header{
 }
 
 .libre{background:#22c55e}
-.pendiente{background:#f59e0b; cursor:not-allowed; opacity:0.7}
-.pagado{background:#ef4444; cursor:not-allowed; opacity:0.7}
+.pendiente{background:#f59e0b; cursor:not-allowed}
+.pagado{background:#ef4444; cursor:not-allowed}
 
 .seleccionado{
   transform:scale(1.1);
@@ -55,22 +54,19 @@ header{
 }
 
 button{
-  width:100%;
-  padding:12px;
+  padding:8px;
   border:none;
-  border-radius:12px;
+  border-radius:8px;
   background:#22c55e;
   color:white;
-  font-weight:bold;
-  margin-top:10px;
+  cursor:pointer;
 }
 
 .qr{
   display:flex;
-  align-items:center;
-  justify-content:center;
   gap:20px;
   flex-wrap:wrap;
+  margin-top:10px;
 }
 
 .qr img{
@@ -81,20 +77,14 @@ button{
 }
 
 .datos{
-  background:rgba(0,0,0,0.4);
-  padding:12px;
-  border-radius:10px;
-  font-size:14px;
-  max-width:250px;
+  font-size:13px;
 }
-
-.total{font-weight:bold}
 </style>
 </head>
 
 <body>
 
-<header>🎟️ ESCOGE TU NÚMERO</header>
+<header>🎟️ RIFA PREMIUM</header>
 
 <div class="container">
 
@@ -106,28 +96,40 @@ button{
 </div>
 
 <div class="card">
-<div id="totalBox" class="total">Seleccionados: 0 | Total: $0</div>
-<button onclick="comprar()">💳 Comprar ahora</button>
+<div id="totalBox">Seleccionados: 0 | Total: $0</div>
+<button onclick="comprar()">💳 Comprar</button>
 
 <div id="pagoBox" class="qr" style="display:none;">
-
 <img src="qr.png">
 
 <div class="datos">
-<b>DATOS DE PAGO</b><br><br>
-👤 <b>LUIS ALVEAR</b><br>
-🏦 Cuenta de Ahorros - Pichincha<br>
-💳 2204309484<br>
-📱 0987838871<br><br>
-⚠️ <b>RECUERDA ENVIAR EL COMPROBANTE AL WHATSAPP</b>
+<b>DATOS</b><br>
+LUIS ALVEAR<br>
+CUENTA PICHINCHA<br>
+2204309484<br>
+0987838871<br><br>
+<b>ENVÍA COMPROBANTE</b>
 </div>
-
 </div>
-
 </div>
 
 <div class="card">
 <div id="grid" class="grid"></div>
+</div>
+
+<div class="card">
+<h3>📊 REGISTROS</h3>
+<input id="buscador" onkeyup="filtrar()" placeholder="Buscar..." style="width:100%;padding:10px;margin-bottom:10px;">
+<table width="100%">
+<thead>
+<tr>
+<th>#</th><th>Nombre</th><th>Cédula</th><th>Tel</th><th>Estado</th><th>Acción</th>
+</tr>
+</thead>
+<tbody id="tabla"></tbody>
+</table>
+
+<button onclick="exportarExcel()">📤 Exportar Excel</button>
 </div>
 
 </div>
@@ -163,12 +165,11 @@ grid.appendChild(d);
 cargarDatos();
 }
 
-// 🔥 BLOQUEO PRO
 function seleccionar(n){
 let elemento=document.querySelectorAll(".num")[n-1];
 
 if(elemento.classList.contains("pendiente") || elemento.classList.contains("pagado")){
-alert("❌ Este número ya no está disponible");
+alert("No disponible");
 return;
 }
 
@@ -186,32 +187,32 @@ document.querySelectorAll(".num").forEach(d=>{
 let n=parseInt(d.innerText);
 d.classList.toggle("seleccionado",seleccionados.includes(n));
 });
+
 document.getElementById("totalBox").innerText=
 "Seleccionados: "+seleccionados.length+" | Total: $"+(seleccionados.length*precio);
 }
 
 function comprar(){
-if(seleccionados.length==0)return alert("Selecciona números");
+if(seleccionados.length==0)return alert("Selecciona");
 
-let nombre=prompt("Nombre:");
-let tel=prompt("Teléfono:");
-if(!nombre||!tel)return;
+let nombre=prompt("Nombre");
+let cedula=prompt("Cédula");
+let tel=prompt("Teléfono");
+
+if(!nombre||!cedula||!tel)return;
 
 let totalP=seleccionados.length*precio;
 
 seleccionados.forEach(n=>{
 db.ref("rifa/"+n).set({
-nombre,tel,estado:"pendiente"
+nombre,cedula,tel,estado:"pendiente"
 });
 });
 
 document.getElementById("pagoBox").style.display="flex";
 
 let msg=encodeURIComponent(
-"Compra rifa\nNombre:"+nombre+
-"\nTel:"+tel+
-"\nNums:"+seleccionados.join(",")+
-"\nTotal:$"+totalP
+"Compra rifa\n"+nombre+"\n"+cedula+"\n"+tel+"\nNums:"+seleccionados.join(",")+"\n$"+totalP
 );
 
 window.open("https://wa.me/"+numeroWhatsApp+"?text="+msg);
@@ -223,18 +224,63 @@ actualizarUI();
 function cargarDatos(){
 db.ref("rifa").on("value",snap=>{
 let data=snap.val()||{};
+let html="";
 let c=0;
 
 for(let n in data){
 c++;
-document.querySelectorAll(".num").forEach(d=>{
-if(d.innerText==n){
-d.className="num "+(data[n].estado=="pagado"?"pagado":"pendiente");
+let d=data[n];
+
+document.querySelectorAll(".num").forEach(x=>{
+if(x.innerText==n){
+x.className="num "+(d.estado=="pagado"?"pagado":"pendiente");
 }
+});
+
+html+=`
+<tr>
+<td>${n}</td>
+<td>${d.nombre}</td>
+<td>${d.cedula}</td>
+<td>${d.tel}</td>
+<td>${d.estado}</td>
+<td><button onclick="marcarPagado(${n})">✅</button></td>
+</tr>`;
+}
+
+document.getElementById("tabla").innerHTML=html;
+document.getElementById("vendidos").innerText=c;
 });
 }
 
-document.getElementById("vendidos").innerText=c;
+function marcarPagado(n){
+if(confirm("Pagado?")){
+db.ref("rifa/"+n).update({estado:"pagado"});
+}
+}
+
+function exportarExcel(){
+db.ref("rifa").once("value").then(snap=>{
+let data=snap.val()||{};
+let csv="Numero,Nombre,Cedula,Telefono,Estado\n";
+
+for(let n in data){
+let d=data[n];
+csv+=`${n},${d.nombre},${d.cedula},${d.tel},${d.estado}\n`;
+}
+
+let blob=new Blob([csv]);
+let a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="rifa.csv";
+a.click();
+});
+}
+
+function filtrar(){
+let v=document.getElementById("buscador").value.toLowerCase();
+document.querySelectorAll("#tabla tr").forEach(tr=>{
+tr.style.display=tr.innerText.toLowerCase().includes(v)?"":"none";
 });
 }
 
