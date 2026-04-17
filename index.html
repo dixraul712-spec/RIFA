@@ -11,18 +11,16 @@ body{
 font-family:Arial;
 background:#0f172a;
 color:white;
-margin:0;
 text-align:center;
+margin:0;
 }
 
 .container{
-padding:15px;
-max-width:900px;
-margin:auto;
+padding:20px;
 }
 
 h1{
-font-size:22px;
+margin-bottom:10px;
 }
 
 .premios{
@@ -31,24 +29,20 @@ padding:15px;
 border-radius:12px;
 color:black;
 font-weight:bold;
-margin:15px 0;
+margin-bottom:20px;
 }
 
 .grid{
 display:grid;
-grid-template-columns:repeat(auto-fill,minmax(55px,1fr));
-gap:6px;
-max-height:300px;
-overflow:auto;
-padding:5px;
+grid-template-columns:repeat(auto-fill,minmax(60px,1fr));
+gap:8px;
 }
 
 .num{
-padding:8px;
+padding:10px;
 background:#1e293b;
 border-radius:8px;
 cursor:pointer;
-font-size:12px;
 }
 
 .selected{
@@ -57,46 +51,20 @@ color:black;
 }
 
 button{
-margin-top:10px;
+margin-top:15px;
 padding:12px;
 border:none;
 border-radius:10px;
 background:#22c55e;
 font-weight:bold;
 cursor:pointer;
-width:100%;
 }
 
 .qr{
-display:none;
-margin-top:15px;
-}
-
-input{
-width:100%;
-padding:10px;
-margin-top:10px;
-border-radius:8px;
-border:none;
-}
-
-.admin{
-display:none;
 margin-top:20px;
-background:#111;
-padding:10px;
-border-radius:10px;
+display:none;
 }
 
-table{
-width:100%;
-font-size:12px;
-}
-
-td,th{
-padding:5px;
-border-bottom:1px solid #333;
-}
 </style>
 </head>
 
@@ -113,9 +81,6 @@ border-bottom:1px solid #333;
 🥉 $200 en efectivo 💵
 </div>
 
-<input id="nombre" placeholder="Tu nombre">
-<input id="tel" placeholder="Tu WhatsApp">
-
 <p>Selecciona tus números:</p>
 
 <div class="grid" id="grid"></div>
@@ -127,153 +92,57 @@ border-bottom:1px solid #333;
 <div class="qr" id="qr">
 <p>Escanea y paga:</p>
 <img src="qr.png" width="200">
-
+<br><br>
 <button onclick="yaPague()">✅ YA PAGUÉ</button>
 </div>
 
-<!-- PANEL ADMIN -->
-<div class="admin" id="admin">
-<h3>📊 ADMIN</h3>
-<p>Vendidos: <span id="vendidos">0</span></p>
-
-<button onclick="exportar()">📥 Excel</button>
-
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>Nombre</th>
-<th>Tel</th>
-</tr>
-</thead>
-<tbody id="tabla"></tbody>
-</table>
 </div>
-
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
-const firebaseConfig = {
-apiKey: "TU_API",
-authDomain: "TU_DOMINIO",
-databaseURL: "TU_DATABASE",
-projectId: "TU_ID",
-storageBucket: "",
-messagingSenderId: "",
-appId: ""
-};
+let seleccionados = []
+let precio = 1
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-let seleccionados=[]
-let precio=3
-
-let grid=document.getElementById("grid")
+let grid = document.getElementById("grid")
 
 for(let i=1;i<=10000;i++){
-let d=document.createElement("div")
-d.className="num"
-d.innerText=i
+let div = document.createElement("div")
+div.className="num"
+div.innerText=i
 
-d.onclick=()=>{
+div.onclick=()=>{
 if(seleccionados.includes(i)){
-seleccionados=seleccionados.filter(n=>n!==i)
-d.classList.remove("selected")
+seleccionados = seleccionados.filter(n=>n!==i)
+div.classList.remove("selected")
 }else{
 seleccionados.push(i)
-d.classList.add("selected")
+div.classList.add("selected")
 }
-actualizar()
-}
-
-grid.appendChild(d)
+actualizarTotal()
 }
 
-function actualizar(){
-document.getElementById("total").innerText=
-"Total: $"+(seleccionados.length*precio)
+grid.appendChild(div)
+}
+
+function actualizarTotal(){
+document.getElementById("total").innerText =
+"Total: $" + (seleccionados.length * precio)
 }
 
 function pagar(){
 if(seleccionados.length==0){
-alert("Selecciona números")
+alert("Selecciona al menos un número")
 return
 }
 document.getElementById("qr").style.display="block"
 }
 
 function yaPague(){
-let nombre=document.getElementById("nombre").value
-let tel=document.getElementById("tel").value
+let numeros = seleccionados.join(", ")
 
-if(!nombre || !tel){
-alert("Completa datos")
-return
-}
+let link = "https://wa.me/593TU_NUMERO?text=Hola%20ya%20pagué%20los%20números:%20"+numeros
 
-seleccionados.forEach(n=>{
-db.ref("rifa/"+n).set({
-nombre,
-tel
-})
-})
-
-let link="https://wa.me/593TU_NUMERO?text=Ya pagué números: "+seleccionados.join(",")
 window.open(link,"_blank")
 }
-
-function cargar(){
-db.ref("rifa").on("value",snap=>{
-let data=snap.val()||{}
-let tabla=document.getElementById("tabla")
-tabla.innerHTML=""
-let count=0
-
-for(let n in data){
-count++
-let d=data[n]
-
-tabla.innerHTML+=`
-<tr>
-<td>${n}</td>
-<td>${d.nombre}</td>
-<td>${d.tel}</td>
-</tr>`
-}
-
-document.getElementById("vendidos").innerText=count
-})
-}
-
-function exportar(){
-let csv="Numero,Nombre,Telefono\n"
-
-db.ref("rifa").once("value",snap=>{
-let data=snap.val()||{}
-
-for(let n in data){
-let d=data[n]
-csv+=`${n},${d.nombre},${d.tel}\n`
-}
-
-let blob=new Blob([csv])
-let a=document.createElement("a")
-a.href=URL.createObjectURL(blob)
-a.download="rifa.csv"
-a.click()
-})
-}
-
-document.addEventListener("keydown",e=>{
-if(e.key==="a"){
-document.getElementById("admin").style.display="block"
-cargar()
-}
-})
 </script>
 
 </body>
