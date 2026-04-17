@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RIFA SOLIDARIA</title>
+<title>Rifa Solidaria</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 
@@ -19,6 +19,7 @@ header{
   padding:15px;
   text-align:center;
   font-weight:700;
+  font-size:20px;
 }
 
 .container{padding:15px;max-width:1100px;margin:auto}
@@ -34,6 +35,8 @@ header{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(60px,1fr));
   gap:8px;
+  max-height:400px;
+  overflow:auto;
 }
 
 .num{
@@ -42,6 +45,7 @@ header{
   text-align:center;
   cursor:pointer;
   font-weight:bold;
+  font-size:12px;
 }
 
 .libre{background:#22c55e}
@@ -49,109 +53,125 @@ header{
 .pagado{background:#ef4444}
 
 .seleccionado{
-  outline:3px solid yellow;
+  transform:scale(1.1);
+  box-shadow:0 0 8px yellow;
 }
 
 button{
-  width:100%;
-  padding:12px;
+  padding:10px;
   border:none;
   border-radius:10px;
   background:#22c55e;
   color:white;
-  font-weight:bold;
-  margin-top:10px;
   cursor:pointer;
+  margin:5px;
 }
 
 input{
-  width:100%;
-  padding:10px;
   border-radius:10px;
   border:none;
-  margin-top:5px;
+  padding:10px;
 }
 
 .qr{
   display:flex;
-  gap:15px;
-  align-items:center;
-  justify-content:center;
+  gap:20px;
   flex-wrap:wrap;
+  margin-top:15px;
 }
 
 .qr img{
-  width:180px;
+  width:200px;
   background:white;
   padding:10px;
   border-radius:10px;
 }
 
-.admin{
-  display:none;
-  position:fixed;
-  bottom:0;
-  width:100%;
-  background:#000;
-  max-height:80vh;
-  overflow:auto;
+.premios{
+  display:flex;
+  gap:15px;
+  flex-wrap:wrap;
+  align-items:center;
 }
 
-table{width:100%;font-size:12px}
+.premios img{
+  width:150px;
+  border-radius:10px;
+}
 </style>
 </head>
 
 <body>
 
 <header>🎟️ RIFA SOLIDARIA</header>
+<button onclick="abrirAdmin()" style="position:fixed;top:10px;right:10px;">🔐</button>
 
 <div class="container">
 
-<div class="card" style="text-align:center">
+<div class="card">
+<h2>LOS PREMIOS SON</h2>
 
-<h3>🎁 PREMIOS</h3>
+<div class="premios">
+<img src="ps5.png">
+<div>🎮 PLAY STATION 5</div>
 
-<img src="ps5.png" style="width:100%;max-width:400px;margin-bottom:15px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.5);">
-
-<img src="cpunuc.png" style="width:100%;max-width:500px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+<img src="cpunuc.png">
+<div>💻 CPU NUC COMPLETA</div>
+</div>
 
 <p>$5 por número</p>
-
+<p>Vendidos: <b id="vendidos">0</b></p>
 </div>
 
 <div class="card">
-<input type="text" placeholder="🔍 Buscar número..." oninput="buscar(this.value)">
 <div id="totalBox">Seleccionados: 0 | Total: $0</div>
-<button onclick="comprar()">💳 COMPRAR</button>
-</div>
+<button onclick="comprar()">💳 Comprar</button>
 
-<div class="card qr" id="pagoBox" style="display:none;">
+<div id="pagoBox" class="qr" style="display:none;">
 <img src="qr.png">
+
 <div>
-<h4>DATOS</h4>
-<p>LUIS ALVEAR</p>
-<p>CUENTA DE AHORROS PICHINCHA</p>
-<p>2204309484</p>
-<p>0987838871</p>
-<p>📲 Enviar comprobante por WhatsApp</p>
+<h3>💳 PAGO</h3>
+<p>Total: $<span id="totalPago">0</span></p>
+
+<b>DATOS</b><br>
+LUIS ALVEAR<br>
+CUENTA DE AHORROS PICHINCHA<br>
+2204309484<br>
+0987838871<br><br>
+
+<button onclick="enviarComprobante()">📲 Enviar comprobante</button>
+</div>
 </div>
 </div>
 
 <div class="card">
+
+<div style="text-align:center;margin-bottom:10px;">
+<button onclick="cambiarBloque(-1)">⬅️</button>
+<span id="rangoActual">1 - 100</span>
+<button onclick="cambiarBloque(1)">➡️</button>
+</div>
+
+<input id="buscadorNumeros" placeholder="🔍 Buscar número..." onkeyup="buscarNumero()" style="width:100%;margin-bottom:10px;">
+
 <div id="grid" class="grid"></div>
-</div>
 
 </div>
 
-<div class="admin" id="admin">
-<h3>PANEL ADMIN</h3>
-<button onclick="exportarExcel()">Exportar Excel</button>
-<button onclick="reset()">Reset</button>
+<div class="card" id="adminPanel" style="display:none;">
+<h3>📊 REGISTROS</h3>
 
-<table>
-<thead><tr><th>#</th><th>Nombre</th><th>Tel</th><th>Cédula</th><th>Estado</th></tr></thead>
+<table width="100%">
+<thead>
+<tr><th>#</th><th>Nombre</th><th>Cédula</th><th>Tel</th><th>Estado</th><th></th></tr>
+</thead>
 <tbody id="tabla"></tbody>
 </table>
+
+<button onclick="exportarExcel()">📤 Exportar Excel</button>
+</div>
+
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -159,10 +179,10 @@ table{width:100%;font-size:12px}
 
 <script>
 const firebaseConfig={
-apiKey:"TU_API_KEY",
-authDomain:"TU_DOMINIO",
-databaseURL:"TU_DB_URL",
-projectId:"TU_ID"
+apiKey:"AIzaSyBoCNV94pAyGK7bhNE5rVjqOPI40JB4sXQ",
+authDomain:"rifa-6dd5b.firebaseapp.com",
+databaseURL:"https://rifa-6dd5b-default-rtdb.firebaseio.com",
+projectId:"rifa-6dd5b"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -170,29 +190,63 @@ const db=firebase.database();
 
 let seleccionados=[];
 const precio=5;
-const total=2000;
-const numeroWhatsApp="593987838871";
+
+let inicio=1;
+let fin=100;
+
+let nombreCliente="",cedulaCliente="",telCliente="",numerosCliente="",totalCliente=0;
+
+function abrirAdmin(){
+let c=prompt("Clave:");
+if(c==="Rifa2026$Pro"){
+document.getElementById("adminPanel").style.display="block";
+}
+}
 
 function cargar(){
-let grid=document.getElementById("grid");
-for(let i=1;i<=total;i++){
-let d=document.createElement("div");
-d.className="num libre";
-d.innerText=i;
-d.onclick=()=>seleccionar(i,d);
-grid.appendChild(d);
-}
+renderBloque();
 cargarDatos();
 }
 
-function seleccionar(n,el){
-if(el.classList.contains("pagado") || el.classList.contains("pendiente")) return;
+function renderBloque(){
+let g=document.getElementById("grid");
+g.innerHTML="";
+
+for(let i=inicio;i<=fin;i++){
+let d=document.createElement("div");
+d.className="num libre";
+d.innerText=i;
+d.onclick=()=>seleccionar(i);
+g.appendChild(d);
+}
+
+document.getElementById("rangoActual").innerText=inicio+" - "+fin;
+}
+
+function cambiarBloque(d){
+inicio+=d*100;
+fin+=d*100;
+
+if(inicio<1){inicio=1;fin=100;}
+if(fin>2000){inicio=1901;fin=2000;}
+
+renderBloque();
+cargarDatos();
+}
+
+function seleccionar(n){
+let e=document.querySelectorAll(".num")[n-inicio];
+
+if(!e || e.classList.contains("pendiente")||e.classList.contains("pagado")){
+return alert("No disponible");
+}
 
 if(seleccionados.includes(n)){
 seleccionados=seleccionados.filter(x=>x!==n);
 }else{
 seleccionados.push(n);
 }
+
 actualizarUI();
 }
 
@@ -208,73 +262,100 @@ document.getElementById("totalBox").innerText=
 function comprar(){
 if(seleccionados.length==0)return alert("Selecciona números");
 
-let nombre=prompt("Nombre:");
-let tel=prompt("Teléfono:");
-let cedula=prompt("Cédula:");
+let nombre=prompt("Nombre");
+let cedula=prompt("Cédula");
+let tel=prompt("Teléfono");
+
+if(!nombre||!cedula||!tel)return;
 
 let totalP=seleccionados.length*precio;
 
+nombreCliente=nombre;
+cedulaCliente=cedula;
+telCliente=tel;
+numerosCliente=seleccionados.join(",");
+totalCliente=totalP;
+
 seleccionados.forEach(n=>{
-db.ref("rifa/"+n).set({
-nombre,tel,cedula,estado:"pendiente"
-});
+db.ref("rifa/"+n).set({nombre,cedula,tel,estado:"pendiente"});
 });
 
+document.getElementById("totalPago").innerText=totalP;
 document.getElementById("pagoBox").style.display="flex";
-
-let msg=encodeURIComponent(
-"RIFA SOLIDARIA\n\nNombre:"+nombre+
-"\nTel:"+tel+
-"\nCedula:"+cedula+
-"\nNumeros:"+seleccionados.join(",")+
-"\nTotal:$"+totalP
-);
-
-window.open("https://wa.me/"+numeroWhatsApp+"?text="+msg);
 
 seleccionados=[];
 actualizarUI();
 }
 
+function enviarComprobante(){
+let mensaje=encodeURIComponent(
+"Hola, ya realicé el pago ✅\n\n"+
+"Nombre: "+nombreCliente+"\n"+
+"Cédula: "+cedulaCliente+"\n"+
+"Teléfono: "+telCliente+"\n"+
+"Números: "+numerosCliente+"\n"+
+"Total: $"+totalCliente
+);
+
+window.open("https://wa.me/593987838871?text="+mensaje);
+}
+
 function cargarDatos(){
 db.ref("rifa").on("value",snap=>{
 let data=snap.val()||{};
-document.querySelectorAll(".num").forEach(d=>{
-let n=d.innerText;
-if(data[n]){
-d.className="num "+(data[n].estado=="pagado"?"pagado":"pendiente");
+let html="";
+let c=0;
+
+for(let n in data){
+c++;
+let d=data[n];
+
+document.querySelectorAll(".num").forEach(x=>{
+if(x.innerText==n){
+x.className="num "+(d.estado=="pagado"?"pagado":"pendiente");
 }
 });
+
+html+=`<tr>
+<td>${n}</td>
+<td>${d.nombre}</td>
+<td>${d.cedula}</td>
+<td>${d.tel}</td>
+<td>${d.estado}</td>
+<td><button onclick="marcarPagado(${n})">✅</button></td>
+</tr>`;
+}
+
+document.getElementById("tabla").innerHTML=html;
+document.getElementById("vendidos").innerText=c;
 });
 }
 
-function buscar(valor){
-document.querySelectorAll(".num").forEach(d=>{
-d.style.display=d.innerText.includes(valor)?'block':'none';
+function buscarNumero(){
+let v=document.getElementById("buscadorNumeros").value;
+document.querySelectorAll(".num").forEach(n=>{
+n.style.display=n.innerText.includes(v)?"block":"none";
 });
+}
+
+function marcarPagado(n){
+db.ref("rifa/"+n).update({estado:"pagado"});
 }
 
 function exportarExcel(){
-db.ref("rifa").once("value").then(s=>{
-let d=s.val(),csv="Num,Nombre,Tel,Cedula,Estado\n";
-for(let n in d)csv+=n+","+d[n].nombre+","+d[n].tel+","+d[n].cedula+","+d[n].estado+"\n";
+db.ref("rifa").once("value").then(snap=>{
+let data=snap.val()||{};
+let csv="Numero,Nombre,Cedula,Telefono,Estado\n";
+for(let n in data){
+let d=data[n];
+csv+=`${n},${d.nombre},${d.cedula},${d.tel},${d.estado}\n`;
+}
 let a=document.createElement("a");
 a.href=URL.createObjectURL(new Blob([csv]));
 a.download="rifa.csv";
 a.click();
 });
 }
-
-function reset(){db.ref("rifa").remove();}
-
-document.addEventListener("keydown",e=>{
-if(e.key=="a"){
-let c=prompt("Clave:");
-if(c==="Rifa2026$Pro"){
-document.getElementById("admin").style.display="block";
-}
-}
-});
 
 cargar();
 </script>
