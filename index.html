@@ -1,103 +1,67 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Rifa PRO</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rifa Viral PRO</title>
 
-  <style>
-    body { font-family: Arial; background:#0f172a; color:white; margin:0; }
-    header { background:#22c55e; color:black; text-align:center; padding:15px; font-size:20px; }
+<style>
+body{font-family:Arial;background:#0f172a;color:white;margin:0}
+header{background:#22c55e;color:black;text-align:center;padding:15px;font-size:20px}
 
-    .container { max-width:1000px; margin:auto; padding:10px; }
+.container{max-width:1000px;margin:auto;padding:10px}
+.card{background:#1e293b;padding:15px;border-radius:10px;margin-bottom:10px}
 
-    .card { background:#1e293b; padding:15px; border-radius:10px; margin-bottom:10px; }
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(70px,1fr));
+gap:8px;
+}
 
-    .mensaje {
-      background:#22c55e; color:black; padding:10px;
-      border-radius:8px; text-align:center; font-weight:bold;
-    }
+.num{padding:10px;border-radius:8px;text-align:center;cursor:pointer}
+.libre{background:#22c55e}
+.pendiente{background:#f59e0b}
+.pagado{background:#ef4444}
+.seleccionado{border:3px solid yellow}
 
-    .flex { display:flex; justify-content:space-between; flex-wrap:wrap; }
+button,input{padding:10px;border:none;border-radius:8px;margin-top:5px}
+button{background:#22c55e;font-weight:bold}
 
-    .qr img { width:180px; background:white; padding:10px; border-radius:10px; }
-
-    .grid {
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(70px,1fr));
-      gap:8px;
-    }
-
-    .num { padding:10px; border-radius:8px; text-align:center; cursor:pointer; }
-    .libre{ background:#22c55e; }
-    .pendiente{ background:#f59e0b; }
-    .pagado{ background:#ef4444; }
-
-    input,button {
-      padding:10px; border:none; border-radius:8px; margin-top:5px;
-    }
-
-    button { background:#22c55e; font-weight:bold; }
-
-    .admin {
-      display:none;
-      position:fixed;
-      bottom:0;
-      width:100%;
-      background:black;
-      max-height:80vh;
-      overflow:auto;
-    }
-
-    table { width:100%; font-size:12px; border-collapse:collapse; }
-    td,th { border:1px solid gray; padding:5px; text-align:center; }
-
-  </style>
+.qr img{width:180px;background:white;padding:10px;border-radius:10px}
+.admin{display:none;position:fixed;bottom:0;width:100%;background:black;max-height:80vh;overflow:auto}
+table{width:100%;font-size:12px}
+</style>
 </head>
 
 <body>
 
-<header>🎟️ RIFA PRO</header>
+<header>🎟️ RIFA VIRAL PRO</header>
 
 <div class="container">
 
-<div class="card">
-🥇 PlayStation 5 <br>
-🥈 Computadora Core i7 <br>
-💰 $5 por número <br><br>
+<div class="card" style="text-align:center;">
+⏳ Sorteo en:
+<h2 id="contador"></h2>
+</div>
 
+<div class="card">
+🥇 PlayStation 5<br>
+💰 $5 por número<br><br>
 Vendidos: <b id="vendidos">0</b>
-
-<div class="mensaje">
-💬 Pagos seguros + envío de comprobante  
-✔ Confirmación inmediata
-</div>
 </div>
 
-<div class="card flex">
-<div>
-<h3>💳 Pago QR</h3>
-<input type="file" id="comprobante">
-<button onclick="enviarComprobante()">📤 Enviar comprobante</button>
-</div>
+<div class="card">
+<div id="totalBox">Seleccionados: 0 | Total: $0</div>
+<button onclick="comprar()">💳 Pagar</button>
 
-<div class="qr">
-<img src="qr.png">
+<div id="pagoBox" style="display:none;text-align:center;">
+<h3>Escanea para pagar</h3>
+<img src="qr.png" width="200">
 </div>
 </div>
 
 <div class="card">
-<input type="number" id="buscar" placeholder="Buscar número">
-<button onclick="buscarNum()">Buscar</button>
-<button onclick="aleatorio()">🎲</button>
-</div>
-
-<div class="card">
-<button onclick="prev()">⬅</button>
-<span id="pagina"></span>
-<button onclick="next()">➡</button>
-</div>
-
 <div id="grid" class="grid"></div>
+</div>
 
 </div>
 
@@ -105,12 +69,11 @@ Vendidos: <b id="vendidos">0</b>
 <h3>ADMIN</h3>
 <button onclick="exportarExcel()">Excel</button>
 <button onclick="reset()">Reset</button>
+<button onclick="sortear()">🎉 Sortear</button>
 
 <table>
 <thead>
-<tr>
-<th>#</th><th>Nombre</th><th>Teléfono</th><th>Estado</th><th>Comp</th><th></th>
-</tr>
+<tr><th>#</th><th>Nombre</th><th>Tel</th><th>Estado</th></tr>
 </thead>
 <tbody id="tabla"></tbody>
 </table>
@@ -120,157 +83,157 @@ Vendidos: <b id="vendidos">0</b>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyBoCNV94pAyGK7bhNE5rVjqOPI40JB4sXQ",
-  authDomain: "rifa-6dd5b.firebaseapp.com",
-  databaseURL: "https://rifa-6dd5b-default-rtdb.firebaseio.com",
-  projectId: "rifa-6dd5b"
+const firebaseConfig={
+apiKey:"AIzaSyBoCNV94pAyGK7bhNE5rVjqOPI40JB4sXQ",
+authDomain:"rifa-6dd5b.firebaseapp.com",
+databaseURL:"https://rifa-6dd5b-default-rtdb.firebaseio.com",
+projectId:"rifa-6dd5b"
 };
 
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const db=firebase.database();
 
-let paginaActual=1;
-const porPagina=100;
-const total=2000;
-let ultimoNumero=null;
+let seleccionados=[];
+const precio=5;
+const total=500;
+const numeroWhatsApp="593XXXXXXXXX";
 
-const numeroWhatsApp="593XXXXXXXXX"; // CAMBIAR
-
-function cargarPagina(){
-let grid=document.getElementById("grid");
-grid.innerHTML="";
-
-let inicio=(paginaActual-1)*porPagina+1;
-let fin=inicio+porPagina-1;
-
-document.getElementById("pagina").innerText="Página "+paginaActual;
-
-for(let i=inicio;i<=fin;i++){
-let div=document.createElement("div");
-div.className="num libre";
-div.innerText=i;
-div.onclick=()=>seleccionar(i);
-grid.appendChild(div);
+function iniciarContador(){
+const fin=new Date("2026-12-31").getTime();
+setInterval(()=>{
+let d=fin-Date.now();
+let h=Math.floor(d/3600000);
+let m=Math.floor((d%3600000)/60000);
+let s=Math.floor((d%60000)/1000);
+document.getElementById("contador").innerText=h+"h "+m+"m "+s+"s";
+},1000);
 }
 
+function cargar(){
+let grid=document.getElementById("grid");
+for(let i=1;i<=total;i++){
+let d=document.createElement("div");
+d.className="num libre";
+d.innerText=i;
+d.onclick=()=>seleccionar(i);
+grid.appendChild(d);
+}
 cargarDatos();
+}
+
+function seleccionar(n){
+if(seleccionados.includes(n)){
+seleccionados=seleccionados.filter(x=>x!==n);
+}else{
+seleccionados.push(n);
+}
+actualizarUI();
+}
+
+function actualizarUI(){
+document.querySelectorAll(".num").forEach(d=>{
+let n=parseInt(d.innerText);
+d.classList.toggle("seleccionado",seleccionados.includes(n));
+});
+
+let totalP=seleccionados.length*precio;
+document.getElementById("totalBox").innerText=
+"Seleccionados: "+seleccionados.join(", ")+" | Total: $"+totalP;
+}
+
+function comprar(){
+if(seleccionados.length==0)return alert("Selecciona números");
+
+let nombre=prompt("Nombre:");
+let tel=prompt("Teléfono:");
+if(!nombre||!tel)return;
+
+let totalP=seleccionados.length*precio;
+
+seleccionados.forEach(n=>{
+db.ref("rifa/"+n).set({
+nombre,tel,estado:"reservado",expira:Date.now()+300000
+});
+});
+
+document.getElementById("pagoBox").style.display="block";
+
+let msg=encodeURIComponent(
+"Compra rifa\nNombre:"+nombre+
+"\nTel:"+tel+
+"\nNums:"+seleccionados.join(",")+
+"\nTotal:$"+totalP
+);
+
+window.open("https://wa.me/"+0987838871+"?text="+msg);
+
+seleccionados=[];
+actualizarUI();
 }
 
 function cargarDatos(){
 db.ref("rifa").on("value",snap=>{
 let data=snap.val()||{};
-let count=0;
-let tabla=document.getElementById("tabla");
-tabla.innerHTML="";
+let c=0;
 
 for(let n in data){
-let d=data[n];
-count++;
-
-tabla.innerHTML+=`
-<tr>
-<td>${n}</td>
-<td>${d.nombre}</td>
-<td>${d.telefono}</td>
-<td>${d.estado}</td>
-<td>${d.comprobante?'<a href="'+d.comprobante+'" target="_blank">Ver</a>':''}</td>
-<td><button onclick="pagar(${n})">✔</button></td>
-</tr>`;
-}
-
-document.querySelectorAll(".num").forEach(div=>{
-let n=parseInt(div.innerText);
-div.className="num libre";
-
-if(data[n]){
-if(data[n].estado==="pendiente"||data[n].estado==="verificando")
-div.classList.add("pendiente");
-else div.classList.add("pagado");
+c++;
+document.querySelectorAll(".num").forEach(d=>{
+if(d.innerText==n){
+d.className="num "+(data[n].estado=="pagado"?"pagado":"pendiente");
 }
 });
+}
 
-document.getElementById("vendidos").innerText=count;
+document.getElementById("vendidos").innerText=c+(total-c<50?" ⚠️ ÚLTIMOS":"");
 });
 }
 
-function seleccionar(num){
-let nombre=prompt("Nombre:");
-let telefono=prompt("Teléfono:");
-if(!nombre||!telefono)return;
-
-ultimoNumero=num;
-
-db.ref("rifa/"+num).set({
-nombre,telefono,estado:"pendiente"
-});
-
-// WHATSAPP AUTOMÁTICO
-let msg=encodeURIComponent(
-"Hola 👋\nNombre: "+nombre+
-"\nTeléfono: "+telefono+
-"\nNúmero: "+num+
-"\nYa realicé el pago, envío comprobante."
-);
-
-window.open("https://wa.me/"+0987838871+"?text="+msg);
+setInterval(()=>{
+db.ref("rifa").once("value").then(s=>{
+let data=s.val()||{};
+for(let n in data){
+if(data[n].estado=="reservado" && Date.now()>data[n].expira){
+db.ref("rifa/"+n).remove();
 }
-
-function enviarComprobante(){
-let file=document.getElementById("comprobante").files[0];
-if(!file||!ultimoNumero){alert("Falta comprobante");return;}
-
-let reader=new FileReader();
-reader.onload=e=>{
-db.ref("rifa/"+ultimoNumero).update({
-estado:"verificando",
-comprobante:e.target.result
-});
-alert("Enviado ✔");
-};
-reader.readAsDataURL(file);
 }
-
-function pagar(n){ db.ref("rifa/"+n).update({estado:"pagado"}); }
+});
+},10000);
 
 function exportarExcel(){
-db.ref("rifa").once("value").then(snap=>{
-let data=snap.val();
-let csv="Numero,Nombre,Telefono,Estado\n";
-for(let n in data){
-let d=data[n];
-csv+=`${n},${d.nombre},${d.telefono},${d.estado}\n`;
-}
-let blob=new Blob([csv]);
+db.ref("rifa").once("value").then(s=>{
+let d=s.val(),csv="Num,Nombre,Tel\n";
+for(let n in d)csv+=n+","+d[n].nombre+","+d[n].tel+"\n";
 let a=document.createElement("a");
-a.href=URL.createObjectURL(blob);
+a.href=URL.createObjectURL(new Blob([csv]));
 a.download="rifa.csv";
 a.click();
 });
 }
 
-function reset(){ db.ref("rifa").remove(); }
+function reset(){db.ref("rifa").remove();}
 
-function buscarNum(){
-let n=document.getElementById("buscar").value;
-paginaActual=Math.ceil(n/porPagina);
-cargarPagina();
+function sortear(){
+let nums=document.querySelectorAll(".num");
+let i=0;
+let int=setInterval(()=>{
+nums.forEach(n=>n.style.background="");
+let r=Math.floor(Math.random()*nums.length);
+nums[r].style.background="gold";
+i++;
+if(i>30){
+clearInterval(int);
+alert("GANADOR: "+nums[r].innerText);
 }
-
-function aleatorio(){
-let n=Math.floor(Math.random()*total)+1;
-document.getElementById("buscar").value=n;
-buscarNum();
+},100);
 }
-
-function next(){ if(paginaActual<total/porPagina){paginaActual++;cargarPagina();}}
-function prev(){ if(paginaActual>1){paginaActual--;cargarPagina();}}
 
 document.addEventListener("keydown",e=>{
-if(e.key==="a") document.getElementById("admin").style.display="block";
+if(e.key=="a")document.getElementById("admin").style.display="block";
 });
 
-cargarPagina();
+iniciarContador();
+cargar();
 </script>
 
 </body>
