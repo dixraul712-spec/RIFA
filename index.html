@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html>
 <head>
@@ -5,124 +6,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #0f172a;
-      margin: 0;
-      color: white;
-    }
+    body { font-family: Arial; background:#0f172a; color:white; margin:0; }
+    header { background:#22c55e; color:black; text-align:center; padding:15px; font-size:20px; }
 
-    header {
-      background: linear-gradient(90deg,#22c55e,#4ade80);
-      color: black;
-      text-align: center;
-      padding: 15px;
-      font-size: 22px;
-      font-weight: bold;
-    }
+    .container { max-width:1000px; margin:auto; padding:10px; }
 
-    .container {
-      max-width: 1000px;
-      margin: auto;
-      padding: 15px;
-    }
-
-    .card {
-      background: #1e293b;
-      padding: 15px;
-      border-radius: 12px;
-      margin-bottom: 15px;
-    }
+    .card { background:#1e293b; padding:15px; border-radius:10px; margin-bottom:10px; }
 
     .mensaje {
-      background:#22c55e;
-      color:black;
-      padding:10px;
-      border-radius:8px;
-      text-align:center;
-      font-weight:bold;
-      margin-top:10px;
+      background:#22c55e; color:black; padding:10px;
+      border-radius:8px; text-align:center; font-weight:bold;
     }
 
-    .flex {
-      display: flex;
-      gap: 15px;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-    }
+    .flex { display:flex; justify-content:space-between; flex-wrap:wrap; }
 
-    .qr img {
-      width:180px;
-      background:white;
-      padding:10px;
-      border-radius:10px;
-    }
+    .qr img { width:180px; background:white; padding:10px; border-radius:10px; }
 
     .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-      gap: 8px;
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(70px,1fr));
+      gap:8px;
     }
 
-    .num {
-      padding: 12px;
-      border-radius: 8px;
-      text-align: center;
-      font-weight: bold;
-      cursor: pointer;
+    .num { padding:10px; border-radius:8px; text-align:center; cursor:pointer; }
+    .libre{ background:#22c55e; }
+    .pendiente{ background:#f59e0b; }
+    .pagado{ background:#ef4444; }
+
+    input,button {
+      padding:10px; border:none; border-radius:8px; margin-top:5px;
     }
 
-    .libre { background: #22c55e; }
-    .pendiente { background: #f59e0b; }
-    .pagado { background: #ef4444; }
-
-    input {
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      width: 100%;
-    }
-
-    button {
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      background: #22c55e;
-      color: black;
-    }
-
-    .nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+    button { background:#22c55e; font-weight:bold; }
 
     .admin {
       display:none;
       position:fixed;
       bottom:0;
-      right:0;
       width:100%;
+      background:black;
       max-height:80vh;
-      background:#020617;
       overflow:auto;
-      padding:10px;
     }
 
-    table {
-      width:100%;
-      border-collapse:collapse;
-      font-size:12px;
-    }
+    table { width:100%; font-size:12px; border-collapse:collapse; }
+    td,th { border:1px solid gray; padding:5px; text-align:center; }
 
-    th,td {
-      border:1px solid gray;
-      padding:5px;
-      text-align:center;
-    }
   </style>
 </head>
 
@@ -132,67 +61,60 @@
 
 <div class="container">
 
-  <div class="card">
-    🥇 PlayStation 5 <br>
-    🥈 Computadora Core i7 1TB <br>
-    💰 $5 por número <br><br>
+<div class="card">
+🥇 PlayStation 5 <br>
+🥈 Computadora Core i7 <br>
+💰 $5 por número <br><br>
 
-    Vendidos: <b id="vendidos">0</b>
+Vendidos: <b id="vendidos">0</b>
 
-    <div class="mensaje">
-      💬 Con el objetivo de recaudar fondos para cubrir gastos personales urgentes, estoy organizando esta rifa y agradezco de corazón su apoyo 🙏
-    </div>
-  </div>
+<div class="mensaje">
+💬 Pagos seguros + envío de comprobante  
+✔ Confirmación inmediata
+</div>
+</div>
 
-  <div class="card flex">
-    <div>
-      <h3>💳 Pago por QR</h3>
-      <p>Escanea y sube tu comprobante</p>
+<div class="card flex">
+<div>
+<h3>💳 Pago QR</h3>
+<input type="file" id="comprobante">
+<button onclick="enviarComprobante()">📤 Enviar comprobante</button>
+</div>
 
-      <input type="file" id="comprobante">
-      <button onclick="enviarComprobante()">📤 Enviar comprobante</button>
-    </div>
+<div class="qr">
+<img src="qr.png">
+</div>
+</div>
 
-    <div class="qr">
-      <img src="qr.png">
-    </div>
-  </div>
+<div class="card">
+<input type="number" id="buscar" placeholder="Buscar número">
+<button onclick="buscarNum()">Buscar</button>
+<button onclick="aleatorio()">🎲</button>
+</div>
 
-  <div class="card">
-    <input type="number" id="buscar" placeholder="Buscar número">
-    <button onclick="buscarNum()">Buscar</button>
-    <button onclick="aleatorio()">🎲 Aleatorio</button>
-  </div>
+<div class="card">
+<button onclick="prev()">⬅</button>
+<span id="pagina"></span>
+<button onclick="next()">➡</button>
+</div>
 
-  <div class="card nav">
-    <button onclick="prev()">⬅</button>
-    <span id="pagina"></span>
-    <button onclick="next()">➡</button>
-  </div>
-
-  <div id="grid" class="grid"></div>
+<div id="grid" class="grid"></div>
 
 </div>
 
 <div class="admin" id="admin">
-  <h3>📊 PANEL ADMIN</h3>
+<h3>ADMIN</h3>
+<button onclick="exportarExcel()">Excel</button>
+<button onclick="reset()">Reset</button>
 
-  <button onclick="exportarExcel()">📥 Exportar Excel</button>
-  <button onclick="reset()">🗑 Reset</button>
-
-  <table>
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Nombre</th>
-        <th>Teléfono</th>
-        <th>Estado</th>
-        <th>Comprobante</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody id="tabla"></tbody>
-  </table>
+<table>
+<thead>
+<tr>
+<th>#</th><th>Nombre</th><th>Teléfono</th><th>Estado</th><th>Comp</th><th></th>
+</tr>
+</thead>
+<tbody id="tabla"></tbody>
+</table>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -209,159 +131,144 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let paginaActual = 1;
-const porPagina = 100;
-const total = 2000;
-let ultimoNumero = null;
+let paginaActual=1;
+const porPagina=100;
+const total=2000;
+let ultimoNumero=null;
 
-const grid = document.getElementById("grid");
+const numeroWhatsApp="593XXXXXXXXX"; // CAMBIAR
 
-function cargarPagina() {
-  grid.innerHTML = "";
-  let inicio = (paginaActual - 1)*porPagina + 1;
-  let fin = inicio + porPagina - 1;
+function cargarPagina(){
+let grid=document.getElementById("grid");
+grid.innerHTML="";
 
-  document.getElementById("pagina").innerText = "Página " + paginaActual;
+let inicio=(paginaActual-1)*porPagina+1;
+let fin=inicio+porPagina-1;
 
-  for (let i = inicio; i <= fin; i++) {
-    const div = document.createElement("div");
-    div.classList.add("num","libre");
-    div.innerText = String(i).padStart(4,'0');
-    div.onclick = () => seleccionar(i);
-    grid.appendChild(div);
-  }
+document.getElementById("pagina").innerText="Página "+paginaActual;
 
-  cargarDatos();
+for(let i=inicio;i<=fin;i++){
+let div=document.createElement("div");
+div.className="num libre";
+div.innerText=i;
+div.onclick=()=>seleccionar(i);
+grid.appendChild(div);
 }
 
-function cargarDatos() {
-  db.ref("rifa").on("value", snap => {
-    const data = snap.val() || {};
-    let count = 0;
-    const tabla = document.getElementById("tabla");
-    tabla.innerHTML = "";
+cargarDatos();
+}
 
-    Object.keys(data).forEach(n => {
-      let d = data[n];
-      count++;
+function cargarDatos(){
+db.ref("rifa").on("value",snap=>{
+let data=snap.val()||{};
+let count=0;
+let tabla=document.getElementById("tabla");
+tabla.innerHTML="";
 
-      tabla.innerHTML += `
-      <tr>
-        <td>${n}</td>
-        <td>${d.nombre}</td>
-        <td>${d.telefono}</td>
-        <td>${d.estado}</td>
-        <td>${d.comprobante ? `<a href="${d.comprobante}" target="_blank">Ver</a>`:""}</td>
-        <td><button onclick="pagar(${n})">✔</button></td>
-      </tr>`;
-    });
+for(let n in data){
+let d=data[n];
+count++;
 
-    document.querySelectorAll(".num").forEach(div => {
-      const n = parseInt(div.innerText);
-      div.className="num libre";
+tabla.innerHTML+=`
+<tr>
+<td>${n}</td>
+<td>${d.nombre}</td>
+<td>${d.telefono}</td>
+<td>${d.estado}</td>
+<td>${d.comprobante?'<a href="'+d.comprobante+'" target="_blank">Ver</a>':''}</td>
+<td><button onclick="pagar(${n})">✔</button></td>
+</tr>`;
+}
 
-      if(data[n]){
-        if(data[n].estado==="pendiente") div.classList.add("pendiente");
-        else if(data[n].estado==="verificando") div.classList.add("pendiente");
-        else div.classList.add("pagado");
-      }
-    });
+document.querySelectorAll(".num").forEach(div=>{
+let n=parseInt(div.innerText);
+div.className="num libre";
 
-    document.getElementById("vendidos").innerText = count;
-  });
+if(data[n]){
+if(data[n].estado==="pendiente"||data[n].estado==="verificando")
+div.classList.add("pendiente");
+else div.classList.add("pagado");
+}
+});
+
+document.getElementById("vendidos").innerText=count;
+});
 }
 
 function seleccionar(num){
-  const nombre = prompt("Nombre:");
-  const telefono = prompt("Teléfono:");
-  if(!nombre || !telefono) return;
+let nombre=prompt("Nombre:");
+let telefono=prompt("Teléfono:");
+if(!nombre||!telefono)return;
 
-  ultimoNumero = num;
+ultimoNumero=num;
 
-  db.ref("rifa/"+num).set({
-    nombre,
-    telefono,
-    estado:"pendiente"
-  });
+db.ref("rifa/"+num).set({
+nombre,telefono,estado:"pendiente"
+});
+
+// WHATSAPP AUTOMÁTICO
+let msg=encodeURIComponent(
+"Hola 👋\nNombre: "+nombre+
+"\nTeléfono: "+telefono+
+"\nNúmero: "+num+
+"\nYa realicé el pago, envío comprobante."
+);
+
+window.open("https://wa.me/"+0987838871+"?text="+msg);
 }
 
 function enviarComprobante(){
-  const file = document.getElementById("comprobante").files[0];
+let file=document.getElementById("comprobante").files[0];
+if(!file||!ultimoNumero){alert("Falta comprobante");return;}
 
-  if(!file || !ultimoNumero){
-    alert("Selecciona número y comprobante");
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = e => {
-    db.ref("rifa/"+ultimoNumero).update({
-      estado:"verificando",
-      comprobante:e.target.result
-    });
-
-    alert("Comprobante enviado ✔");
-  };
-
-  reader.readAsDataURL(file);
+let reader=new FileReader();
+reader.onload=e=>{
+db.ref("rifa/"+ultimoNumero).update({
+estado:"verificando",
+comprobante:e.target.result
+});
+alert("Enviado ✔");
+};
+reader.readAsDataURL(file);
 }
 
-function pagar(num){
-  db.ref("rifa/"+num).update({estado:"pagado"});
-}
+function pagar(n){ db.ref("rifa/"+n).update({estado:"pagado"}); }
 
 function exportarExcel(){
-  db.ref("rifa").once("value").then(snap=>{
-    const data=snap.val();
-    let csv="Numero,Nombre,Telefono,Estado\n";
-
-    for(let n in data){
-      let d=data[n];
-      csv+=`${n},${d.nombre},${d.telefono},${d.estado}\n`;
-    }
-
-    const blob=new Blob([csv],{type:'text/csv'});
-    const a=document.createElement("a");
-    a.href=URL.createObjectURL(blob);
-    a.download="rifa.csv";
-    a.click();
-  });
+db.ref("rifa").once("value").then(snap=>{
+let data=snap.val();
+let csv="Numero,Nombre,Telefono,Estado\n";
+for(let n in data){
+let d=data[n];
+csv+=`${n},${d.nombre},${d.telefono},${d.estado}\n`;
+}
+let blob=new Blob([csv]);
+let a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="rifa.csv";
+a.click();
+});
 }
 
-function reset(){
-  db.ref("rifa").remove();
-}
+function reset(){ db.ref("rifa").remove(); }
 
 function buscarNum(){
-  const n=document.getElementById("buscar").value;
-  paginaActual=Math.ceil(n/porPagina);
-  cargarPagina();
+let n=document.getElementById("buscar").value;
+paginaActual=Math.ceil(n/porPagina);
+cargarPagina();
 }
 
 function aleatorio(){
-  const n=Math.floor(Math.random()*total)+1;
-  document.getElementById("buscar").value=n;
-  buscarNum();
+let n=Math.floor(Math.random()*total)+1;
+document.getElementById("buscar").value=n;
+buscarNum();
 }
 
-function next(){
-  if(paginaActual < total/porPagina){
-    paginaActual++;
-    cargarPagina();
-  }
-}
-
-function prev(){
-  if(paginaActual>1){
-    paginaActual--;
-    cargarPagina();
-  }
-}
+function next(){ if(paginaActual<total/porPagina){paginaActual++;cargarPagina();}}
+function prev(){ if(paginaActual>1){paginaActual--;cargarPagina();}}
 
 document.addEventListener("keydown",e=>{
-  if(e.key==="a"){
-    document.getElementById("admin").style.display="block";
-  }
+if(e.key==="a") document.getElementById("admin").style.display="block";
 });
 
 cargarPagina();
