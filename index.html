@@ -1,61 +1,140 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rifa Viral PRO</title>
+<title>Rifa Premium</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 
 <style>
-body{font-family:Arial;background:#0f172a;color:white;margin:0}
-header{background:#22c55e;color:black;text-align:center;padding:15px;font-size:20px}
-
-.container{max-width:1000px;margin:auto;padding:10px}
-.card{background:#1e293b;padding:15px;border-radius:10px;margin-bottom:10px}
-
-.grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(70px,1fr));
-gap:8px;
+body{
+  font-family:'Poppins',sans-serif;
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  color:white;
+  margin:0;
 }
 
-.num{padding:10px;border-radius:8px;text-align:center;cursor:pointer}
+/* HEADER */
+header{
+  background:rgba(34,197,94,0.9);
+  backdrop-filter:blur(10px);
+  padding:15px;
+  text-align:center;
+  font-weight:700;
+  font-size:18px;
+  position:sticky;
+  top:0;
+}
+
+/* CONTAINER */
+.container{padding:15px;max-width:1000px;margin:auto}
+
+/* CARD */
+.card{
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(10px);
+  border-radius:15px;
+  padding:15px;
+  margin-bottom:15px;
+  box-shadow:0 8px 25px rgba(0,0,0,0.3);
+}
+
+/* GRID NUMEROS */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(70px,1fr));
+  gap:10px;
+}
+
+.num{
+  padding:12px;
+  border-radius:12px;
+  text-align:center;
+  cursor:pointer;
+  font-weight:bold;
+  transition:0.3s;
+}
+
 .libre{background:#22c55e}
 .pendiente{background:#f59e0b}
 .pagado{background:#ef4444}
-.seleccionado{border:3px solid yellow}
+.seleccionado{
+  transform:scale(1.1);
+  box-shadow:0 0 10px yellow;
+}
 
-button,input{padding:10px;border:none;border-radius:8px;margin-top:5px}
-button{background:#22c55e;font-weight:bold}
+/* BOTONES */
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  color:white;
+  font-weight:bold;
+  margin-top:10px;
+  cursor:pointer;
+  transition:0.3s;
+}
+button:hover{transform:scale(1.05)}
 
-.qr img{width:180px;background:white;padding:10px;border-radius:10px}
-.admin{display:none;position:fixed;bottom:0;width:100%;background:black;max-height:80vh;overflow:auto}
+input{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:none;
+  margin-top:5px;
+}
+
+/* QR */
+.qr{
+  text-align:center;
+}
+.qr img{
+  width:180px;
+  border-radius:10px;
+  background:white;
+  padding:10px;
+}
+
+/* ADMIN */
+.admin{
+  display:none;
+  position:fixed;
+  bottom:0;
+  width:100%;
+  background:#000;
+  max-height:80vh;
+  overflow:auto;
+}
+
 table{width:100%;font-size:12px}
+
+/* TEXTO */
+h2{margin:5px 0}
+.total{font-size:16px;font-weight:bold}
 </style>
 </head>
 
 <body>
 
-<header>🎟️ RIFA VIRAL PRO</header>
+<header>🎟️ RIFA PREMIUM</header>
 
 <div class="container">
 
-<div class="card" style="text-align:center;">
-⏳ Sorteo en:
-<h2 id="contador"></h2>
+<div class="card">
+<h2>🎮 PlayStation 5</h2>
+<p>$5 por número</p>
+<p>Vendidos: <b id="vendidos">0</b></p>
 </div>
 
 <div class="card">
-🥇 PlayStation 5<br>
-💰 $5 por número<br><br>
-Vendidos: <b id="vendidos">0</b>
-</div>
+<div id="totalBox" class="total">Seleccionados: 0 | Total: $0</div>
+<button onclick="comprar()">💳 Comprar ahora</button>
 
-<div class="card">
-<div id="totalBox">Seleccionados: 0 | Total: $0</div>
-<button onclick="comprar()">💳 Pagar</button>
-
-<div id="pagoBox" style="display:none;text-align:center;">
+<div id="pagoBox" class="qr" style="display:none;">
 <h3>Escanea para pagar</h3>
-<img src="qr.png" width="200">
+<img src="qr.png">
 </div>
 </div>
 
@@ -69,12 +148,9 @@ Vendidos: <b id="vendidos">0</b>
 <h3>ADMIN</h3>
 <button onclick="exportarExcel()">Excel</button>
 <button onclick="reset()">Reset</button>
-<button onclick="sortear()">🎉 Sortear</button>
 
 <table>
-<thead>
-<tr><th>#</th><th>Nombre</th><th>Tel</th><th>Estado</th></tr>
-</thead>
+<thead><tr><th>#</th><th>Nombre</th><th>Tel</th></tr></thead>
 <tbody id="tabla"></tbody>
 </table>
 </div>
@@ -97,17 +173,6 @@ let seleccionados=[];
 const precio=5;
 const total=500;
 const numeroWhatsApp="593XXXXXXXXX";
-
-function iniciarContador(){
-const fin=new Date("2026-12-31").getTime();
-setInterval(()=>{
-let d=fin-Date.now();
-let h=Math.floor(d/3600000);
-let m=Math.floor((d%3600000)/60000);
-let s=Math.floor((d%60000)/1000);
-document.getElementById("contador").innerText=h+"h "+m+"m "+s+"s";
-},1000);
-}
 
 function cargar(){
 let grid=document.getElementById("grid");
@@ -135,10 +200,8 @@ document.querySelectorAll(".num").forEach(d=>{
 let n=parseInt(d.innerText);
 d.classList.toggle("seleccionado",seleccionados.includes(n));
 });
-
-let totalP=seleccionados.length*precio;
 document.getElementById("totalBox").innerText=
-"Seleccionados: "+seleccionados.join(", ")+" | Total: $"+totalP;
+"Seleccionados: "+seleccionados.length+" | Total: $"+(seleccionados.length*precio);
 }
 
 function comprar(){
@@ -152,7 +215,7 @@ let totalP=seleccionados.length*precio;
 
 seleccionados.forEach(n=>{
 db.ref("rifa/"+n).set({
-nombre,tel,estado:"reservado",expira:Date.now()+300000
+nombre,tel,estado:"pendiente"
 });
 });
 
@@ -185,20 +248,9 @@ d.className="num "+(data[n].estado=="pagado"?"pagado":"pendiente");
 });
 }
 
-document.getElementById("vendidos").innerText=c+(total-c<50?" ⚠️ ÚLTIMOS":"");
+document.getElementById("vendidos").innerText=c;
 });
 }
-
-setInterval(()=>{
-db.ref("rifa").once("value").then(s=>{
-let data=s.val()||{};
-for(let n in data){
-if(data[n].estado=="reservado" && Date.now()>data[n].expira){
-db.ref("rifa/"+n).remove();
-}
-}
-});
-},10000);
 
 function exportarExcel(){
 db.ref("rifa").once("value").then(s=>{
@@ -213,26 +265,10 @@ a.click();
 
 function reset(){db.ref("rifa").remove();}
 
-function sortear(){
-let nums=document.querySelectorAll(".num");
-let i=0;
-let int=setInterval(()=>{
-nums.forEach(n=>n.style.background="");
-let r=Math.floor(Math.random()*nums.length);
-nums[r].style.background="gold";
-i++;
-if(i>30){
-clearInterval(int);
-alert("GANADOR: "+nums[r].innerText);
-}
-},100);
-}
-
 document.addEventListener("keydown",e=>{
 if(e.key=="a")document.getElementById("admin").style.display="block";
 });
 
-iniciarContador();
 cargar();
 </script>
 
