@@ -75,16 +75,15 @@ button{
   padding:10px;
   border-radius:10px;
 }
-
-.datos{
-  font-size:13px;
-}
 </style>
 </head>
 
 <body>
 
 <header>🎟️ RIFA PREMIUM</header>
+
+<!-- 🔐 BOTÓN ADMIN OCULTO -->
+<button onclick="abrirAdmin()" style="position:fixed;top:10px;right:10px;">🔐</button>
 
 <div class="container">
 
@@ -102,7 +101,7 @@ button{
 <div id="pagoBox" class="qr" style="display:none;">
 <img src="qr.png">
 
-<div class="datos">
+<div>
 <b>DATOS</b><br>
 LUIS ALVEAR<br>
 CUENTA PICHINCHA<br>
@@ -117,9 +116,12 @@ CUENTA PICHINCHA<br>
 <div id="grid" class="grid"></div>
 </div>
 
-<div class="card">
+<!-- 🔒 PANEL ADMIN -->
+<div class="card" id="adminPanel" style="display:none;">
 <h3>📊 REGISTROS</h3>
+
 <input id="buscador" onkeyup="filtrar()" placeholder="Buscar..." style="width:100%;padding:10px;margin-bottom:10px;">
+
 <table width="100%">
 <thead>
 <tr>
@@ -153,6 +155,15 @@ const precio=5;
 const total=500;
 const numeroWhatsApp="593987838871";
 
+function abrirAdmin(){
+let clave=prompt("Clave admin:");
+if(clave==="Rifa2026$Pro"){
+document.getElementById("adminPanel").style.display="block";
+}else{
+alert("Acceso denegado");
+}
+}
+
 function cargar(){
 let grid=document.getElementById("grid");
 for(let i=1;i<=total;i++){
@@ -166,9 +177,9 @@ cargarDatos();
 }
 
 function seleccionar(n){
-let elemento=document.querySelectorAll(".num")[n-1];
+let e=document.querySelectorAll(".num")[n-1];
 
-if(elemento.classList.contains("pendiente") || elemento.classList.contains("pagado")){
+if(e.classList.contains("pendiente")||e.classList.contains("pagado")){
 alert("No disponible");
 return;
 }
