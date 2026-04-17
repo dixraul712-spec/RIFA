@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rifa Premium</title>
+<title>Rifa Solidaria</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 
@@ -89,7 +89,7 @@ input{
 
 <body>
 
-<header>🎟️ RIFA PREMIUM</header>
+<header>🎟️ RIFA SOLIDARIA</header>
 <button onclick="abrirAdmin()" style="position:fixed;top:10px;right:10px;">🔐</button>
 
 <div class="container">
@@ -110,10 +110,14 @@ input{
 <div>
 <h3>💳 PAGO</h3>
 <p>Total: $<span id="totalPago">0</span></p>
-<b>LUIS ALVEAR</b><br>
-Pichincha<br>
+
+<b>DATOS</b><br>
+LUIS ALVEAR<br>
+CUENTA DE AHORROS PICHINCHA<br>
 2204309484<br>
-0987838871
+0987838871<br><br>
+
+<button onclick="enviarComprobante()">📲 Enviar comprobante</button>
 </div>
 </div>
 </div>
@@ -154,6 +158,9 @@ const db=firebase.database();
 let seleccionados=[];
 const precio=5;
 const total=2000;
+
+// guardar datos cliente
+let nombreCliente="",cedulaCliente="",telCliente="",numerosCliente="",totalCliente=0;
 
 function abrirAdmin(){
 let c=prompt("Clave:");
@@ -208,6 +215,13 @@ if(!nombre||!cedula||!tel)return;
 
 let totalP=seleccionados.length*precio;
 
+// guardar datos para whatsapp
+nombreCliente=nombre;
+cedulaCliente=cedula;
+telCliente=tel;
+numerosCliente=seleccionados.join(",");
+totalCliente=totalP;
+
 seleccionados.forEach(n=>{
 db.ref("rifa/"+n).set({nombre,cedula,tel,estado:"pendiente"});
 });
@@ -217,6 +231,19 @@ document.getElementById("pagoBox").style.display="flex";
 
 seleccionados=[];
 actualizarUI();
+}
+
+function enviarComprobante(){
+let mensaje = encodeURIComponent(
+"Hola, ya realicé el pago ✅\n\n"+
+"Nombre: "+nombreCliente+"\n"+
+"Cédula: "+cedulaCliente+"\n"+
+"Teléfono: "+telCliente+"\n"+
+"Números: "+numerosCliente+"\n"+
+"Total pagado: $"+totalCliente+"\n\n"+
+"Adjunto comprobante 📸"
+);
+window.open("https://wa.me/593987838871?text="+mensaje);
 }
 
 function cargarDatos(){
